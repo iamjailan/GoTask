@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -48,7 +49,27 @@ func (r *repository) Update(ctx context.Context, customerID, id string, input *M
 		return Model{}, err
 	}
 	model.Title = input.Title
+	model.Description = input.Description
+	if input.Status != "" {
+		model.Status = input.Status
+	}
+	if input.Priority != "" {
+		model.Priority = input.Priority
+	}
+	model.DueDate = input.DueDate
 	model.Completed = input.Completed
+	if input.Completed {
+		if model.CompletedAt == nil {
+			now := time.Now().UTC()
+			model.CompletedAt = &now
+		}
+		model.Status = "completed"
+	} else {
+		model.CompletedAt = nil
+		if model.Status == "completed" {
+			model.Status = "pending"
+		}
+	}
 	if err := r.db.WithContext(ctx).Save(&model).Error; err != nil {
 		return Model{}, err
 	}

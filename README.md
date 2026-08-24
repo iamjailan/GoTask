@@ -19,7 +19,7 @@ Run `make help` to see all available commands.
 ## Endpoints
 
 - `GET /health`
-- `POST /api/v1/tasks` — `{ "title": "Learn Go" }` (requires `Authorization: Bearer <token>`)
+- `POST /api/v1/tasks` — `{ "title": "Learn Go", "description": "...", "status": "pending", "priority": "medium", "due_date": "2026-09-01T12:00:00Z" }` (requires `Authorization: Bearer <token>`)
 - `GET /api/v1/tasks` (requires `Authorization: Bearer <token>`)
 - `GET /api/v1/tasks/:id` — IDs use the `tsk_<UUID>` format
 - `PUT /api/v1/tasks/:id` — `{ "title": "Learn Gin", "completed": true }`

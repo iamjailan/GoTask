@@ -1,6 +1,9 @@
 package task
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type Service interface {
 	Create(context.Context, CreateInput) (Model, error)
@@ -13,20 +16,44 @@ type Service interface {
 type service struct{ repo Repository }
 
 type CreateInput struct {
-	CustomerID string
-	Title      string
+	CustomerID  string
+	Title       string
+	Description string
+	Status      string
+	Priority    string
+	DueDate     *time.Time
+	Completed   bool
 }
 
 type UpdateInput struct {
-	Title     string
-	Completed bool
+	Title       string
+	Description string
+	Status      string
+	Priority    string
+	DueDate     *time.Time
+	Completed   bool
 }
 
 func NewService(repo Repository) Service { return &service{repo: repo} }
 
 func (s *service) Create(ctx context.Context, input CreateInput) (Model, error) {
-	model := Model{Title: input.Title}
-	model.CustomerID = input.CustomerID
+	status := input.Status
+	if status == "" {
+		status = "pending"
+	}
+	priority := input.Priority
+	if priority == "" {
+		priority = "medium"
+	}
+	model := Model{
+		CustomerID: input.CustomerID, Title: input.Title, Description: input.Description,
+		Status: status, Priority: priority, DueDate: input.DueDate, Completed: input.Completed,
+	}
+	if input.Completed {
+		now := time.Now().UTC()
+		model.Status = "completed"
+		model.CompletedAt = &now
+	}
 	return model, s.repo.Create(ctx, &model)
 }
 
@@ -39,7 +66,10 @@ func (s *service) Get(ctx context.Context, customerID, id string) (Model, error)
 }
 
 func (s *service) Update(ctx context.Context, customerID, id string, input UpdateInput) (Model, error) {
-	return s.repo.Update(ctx, customerID, id, &Model{Title: input.Title, Completed: input.Completed})
+	return s.repo.Update(ctx, customerID, id, &Model{
+		Title: input.Title, Description: input.Description, Status: input.Status,
+		Priority: input.Priority, DueDate: input.DueDate, Completed: input.Completed,
+	})
 }
 
 func (s *service) Delete(ctx context.Context, customerID, id string) error {

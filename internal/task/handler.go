@@ -13,16 +13,25 @@ import (
 type Handler struct{ service Service }
 
 type taskRequest struct {
-	Title     string `json:"title" binding:"required,min=1,max=255"`
-	Completed bool   `json:"completed"`
+	Title       string     `json:"title" binding:"required,min=1,max=255"`
+	Description string     `json:"description" binding:"omitempty,max=5000"`
+	Status      string     `json:"status" binding:"omitempty,oneof=pending in_progress completed archived"`
+	Priority    string     `json:"priority" binding:"omitempty,oneof=low medium high urgent"`
+	DueDate     *time.Time `json:"due_date"`
+	Completed   bool       `json:"completed"`
 }
 
 type taskResponse struct {
-	ID        string    `json:"id"`
-	Title     string    `json:"title"`
-	Completed bool      `json:"completed"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID          string     `json:"id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Status      string     `json:"status"`
+	Priority    string     `json:"priority"`
+	DueDate     *time.Time `json:"due_date,omitempty"`
+	Completed   bool       `json:"completed"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
@@ -46,7 +55,10 @@ func (h *Handler) create(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required and must be 1-255 characters"})
 		return
 	}
-	model, err := h.service.Create(c.Request.Context(), CreateInput{CustomerID: customerID, Title: req.Title})
+	model, err := h.service.Create(c.Request.Context(), CreateInput{
+		CustomerID: customerID, Title: req.Title, Description: req.Description,
+		Status: req.Status, Priority: req.Priority, DueDate: req.DueDate, Completed: req.Completed,
+	})
 	if err != nil {
 		h.serverError(c, err)
 		return
@@ -102,7 +114,10 @@ func (h *Handler) update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required and must be 1-255 characters"})
 		return
 	}
-	model, err := h.service.Update(c.Request.Context(), customerID, id, UpdateInput{Title: req.Title, Completed: req.Completed})
+	model, err := h.service.Update(c.Request.Context(), customerID, id, UpdateInput{
+		Title: req.Title, Description: req.Description, Status: req.Status,
+		Priority: req.Priority, DueDate: req.DueDate, Completed: req.Completed,
+	})
 	if err != nil {
 		h.writeServiceError(c, err)
 		return
@@ -159,10 +174,9 @@ func (h *Handler) serverError(c *gin.Context, _ error) {
 
 func response(model Model) taskResponse {
 	return taskResponse{
-		ID:        model.ID,
-		Title:     model.Title,
-		Completed: model.Completed,
-		CreatedAt: model.CreatedAt,
-		UpdatedAt: model.UpdatedAt,
+		ID: model.ID, Title: model.Title, Description: model.Description,
+		Status: model.Status, Priority: model.Priority, DueDate: model.DueDate,
+		Completed: model.Completed, CompletedAt: model.CompletedAt,
+		CreatedAt: model.CreatedAt, UpdatedAt: model.UpdatedAt,
 	}
 }
