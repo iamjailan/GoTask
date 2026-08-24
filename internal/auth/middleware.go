@@ -54,5 +54,5 @@ func JWTMiddleware(secret string) gin.HandlerFunc {
 }
 
 func unauthorized(c *gin.Context) {
-	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 }
