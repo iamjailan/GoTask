@@ -30,7 +30,7 @@ func main() {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
-	taskHandler.RegisterRoutes(router)
+	taskHandler.RegisterRoutes(router, auth.JWTMiddleware(cfg.JWTSecret))
 	authHandler.RegisterRoutes(router)
 
 	log.Printf("API listening on %s", cfg.HTTPAddr)

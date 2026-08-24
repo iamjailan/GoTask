@@ -19,9 +19,9 @@ Run `make help` to see all available commands.
 ## Endpoints
 
 - `GET /health`
-- `POST /api/v1/tasks` — `{ "title": "Learn Go" }`
-- `GET /api/v1/tasks`
-- `GET /api/v1/tasks/:id`
+- `POST /api/v1/tasks` — `{ "title": "Learn Go" }` (requires `Authorization: Bearer <token>`)
+- `GET /api/v1/tasks` (requires `Authorization: Bearer <token>`)
+- `GET /api/v1/tasks/:id` — IDs use the `tsk_<UUID>` format
 - `PUT /api/v1/tasks/:id` — `{ "title": "Learn Gin", "completed": true }`
 - `DELETE /api/v1/tasks/:id`
 - `POST /api/v1/auth/register` — create a customer and return a 24-hour JWT

@@ -3,10 +3,11 @@ package task
 import (
 	"errors"
 	"net/http"
-	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gotask/internal/auth"
 )
 
 type Handler struct{ service Service }
@@ -17,7 +18,7 @@ type taskRequest struct {
 }
 
 type taskResponse struct {
-	ID        uint      `json:"id"`
+	ID        string    `json:"id"`
 	Title     string    `json:"title"`
 	Completed bool      `json:"completed"`
 	CreatedAt time.Time `json:"created_at"`
@@ -26,8 +27,8 @@ type taskResponse struct {
 
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
-func (h *Handler) RegisterRoutes(router *gin.Engine) {
-	routes := router.Group("/api/v1/tasks")
+func (h *Handler) RegisterRoutes(router *gin.Engine, middleware gin.HandlerFunc) {
+	routes := router.Group("/api/v1/tasks", middleware)
 	routes.POST("", h.create)
 	routes.GET("", h.list)
 	routes.GET("/:id", h.get)
@@ -36,12 +37,16 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 }
 
 func (h *Handler) create(c *gin.Context) {
+	customerID, ok := currentCustomerID(c)
+	if !ok {
+		return
+	}
 	var req taskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required and must be 1-255 characters"})
 		return
 	}
-	model, err := h.service.Create(c.Request.Context(), CreateInput{Title: req.Title})
+	model, err := h.service.Create(c.Request.Context(), CreateInput{CustomerID: customerID, Title: req.Title})
 	if err != nil {
 		h.serverError(c, err)
 		return
@@ -50,7 +55,11 @@ func (h *Handler) create(c *gin.Context) {
 }
 
 func (h *Handler) list(c *gin.Context) {
-	models, err := h.service.List(c.Request.Context())
+	customerID, ok := currentCustomerID(c)
+	if !ok {
+		return
+	}
+	models, err := h.service.List(c.Request.Context(), customerID)
 	if err != nil {
 		h.serverError(c, err)
 		return
@@ -63,11 +72,15 @@ func (h *Handler) list(c *gin.Context) {
 }
 
 func (h *Handler) get(c *gin.Context) {
+	customerID, ok := currentCustomerID(c)
+	if !ok {
+		return
+	}
 	id, ok := parseID(c)
 	if !ok {
 		return
 	}
-	model, err := h.service.Get(c.Request.Context(), id)
+	model, err := h.service.Get(c.Request.Context(), customerID, id)
 	if err != nil {
 		h.writeServiceError(c, err)
 		return
@@ -76,6 +89,10 @@ func (h *Handler) get(c *gin.Context) {
 }
 
 func (h *Handler) update(c *gin.Context) {
+	customerID, ok := currentCustomerID(c)
+	if !ok {
+		return
+	}
 	id, ok := parseID(c)
 	if !ok {
 		return
@@ -85,7 +102,7 @@ func (h *Handler) update(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required and must be 1-255 characters"})
 		return
 	}
-	model, err := h.service.Update(c.Request.Context(), id, UpdateInput{Title: req.Title, Completed: req.Completed})
+	model, err := h.service.Update(c.Request.Context(), customerID, id, UpdateInput{Title: req.Title, Completed: req.Completed})
 	if err != nil {
 		h.writeServiceError(c, err)
 		return
@@ -94,24 +111,38 @@ func (h *Handler) update(c *gin.Context) {
 }
 
 func (h *Handler) delete(c *gin.Context) {
+	customerID, ok := currentCustomerID(c)
+	if !ok {
+		return
+	}
 	id, ok := parseID(c)
 	if !ok {
 		return
 	}
-	if err := h.service.Delete(c.Request.Context(), id); err != nil {
+	if err := h.service.Delete(c.Request.Context(), customerID, id); err != nil {
 		h.writeServiceError(c, err)
 		return
 	}
 	c.Status(http.StatusNoContent)
 }
 
-func parseID(c *gin.Context) (uint, bool) {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil || id == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task id"})
-		return 0, false
+func currentCustomerID(c *gin.Context) (string, bool) {
+	value, exists := c.Get(auth.CustomerIDKey)
+	customerID, isString := value.(string)
+	if !exists || !isString || customerID == "" {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+		return "", false
 	}
-	return uint(id), true
+	return customerID, true
+}
+
+func parseID(c *gin.Context) (string, bool) {
+	id := c.Param("id")
+	if !strings.HasPrefix(id, "tsk_") || len(id) <= len("tsk_") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task id"})
+		return "", false
+	}
+	return id, true
 }
 
 func (h *Handler) writeServiceError(c *gin.Context, err error) {

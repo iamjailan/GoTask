@@ -11,10 +11,10 @@ var ErrNotFound = errors.New("task not found")
 
 type Repository interface {
 	Create(context.Context, *Model) error
-	List(context.Context) ([]Model, error)
-	Get(context.Context, uint) (Model, error)
-	Update(context.Context, uint, *Model) (Model, error)
-	Delete(context.Context, uint) error
+	List(context.Context, string) ([]Model, error)
+	Get(context.Context, string, string) (Model, error)
+	Update(context.Context, string, string, *Model) (Model, error)
+	Delete(context.Context, string, string) error
 }
 
 type repository struct{ db *gorm.DB }
@@ -25,15 +25,15 @@ func (r *repository) Create(ctx context.Context, model *Model) error {
 	return r.db.WithContext(ctx).Create(model).Error
 }
 
-func (r *repository) List(ctx context.Context) ([]Model, error) {
+func (r *repository) List(ctx context.Context, customerID string) ([]Model, error) {
 	var models []Model
-	err := r.db.WithContext(ctx).Order("id asc").Find(&models).Error
+	err := r.db.WithContext(ctx).Where("customer_id = ?", customerID).Order("id asc").Find(&models).Error
 	return models, err
 }
 
-func (r *repository) Get(ctx context.Context, id uint) (Model, error) {
+func (r *repository) Get(ctx context.Context, customerID, id string) (Model, error) {
 	var model Model
-	if err := r.db.WithContext(ctx).First(&model, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("customer_id = ? AND id = ?", customerID, id).First(&model).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return Model{}, ErrNotFound
 		}
@@ -42,8 +42,8 @@ func (r *repository) Get(ctx context.Context, id uint) (Model, error) {
 	return model, nil
 }
 
-func (r *repository) Update(ctx context.Context, id uint, input *Model) (Model, error) {
-	model, err := r.Get(ctx, id)
+func (r *repository) Update(ctx context.Context, customerID, id string, input *Model) (Model, error) {
+	model, err := r.Get(ctx, customerID, id)
 	if err != nil {
 		return Model{}, err
 	}
@@ -55,8 +55,8 @@ func (r *repository) Update(ctx context.Context, id uint, input *Model) (Model, 
 	return model, nil
 }
 
-func (r *repository) Delete(ctx context.Context, id uint) error {
-	result := r.db.WithContext(ctx).Delete(&Model{}, id)
+func (r *repository) Delete(ctx context.Context, customerID, id string) error {
+	result := r.db.WithContext(ctx).Where("customer_id = ? AND id = ?", customerID, id).Delete(&Model{})
 	if result.Error != nil {
 		return result.Error
 	}
