@@ -4,6 +4,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"gotask/internal/auth/models"
 	"gotask/internal/task"
 )
 
@@ -12,5 +13,8 @@ func Open(databaseURL string) (*gorm.DB, error) {
 }
 
 func Migrate(db *gorm.DB) error {
-	return db.AutoMigrate(&task.Model{})
+	if err := db.Exec("CREATE EXTENSION IF NOT EXISTS pgcrypto").Error; err != nil {
+		return err
+	}
+	return db.AutoMigrate(&task.Model{}, &models.Model{})
 }

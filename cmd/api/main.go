@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"gotask/internal/auth"
 	"gotask/internal/config"
 	"gotask/internal/database"
 	"gotask/internal/task"
@@ -23,12 +24,14 @@ func main() {
 	}
 
 	taskHandler := task.NewHandler(task.NewService(task.NewRepository(db)))
+	authHandler := auth.NewHandler(auth.NewService(auth.NewRepository(db), cfg.JWTSecret))
 
 	router := gin.Default()
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok"})
 	})
 	taskHandler.RegisterRoutes(router)
+	authHandler.RegisterRoutes(router)
 
 	log.Printf("API listening on %s", cfg.HTTPAddr)
 	if err := router.Run(cfg.HTTPAddr); err != nil {

@@ -9,6 +9,7 @@ import (
 type Config struct {
 	HTTPAddr    string
 	DatabaseURL string
+	JWTSecret   string
 }
 
 func Load() Config {
@@ -17,6 +18,7 @@ func Load() Config {
 	return Config{
 		HTTPAddr:    env("HTTP_ADDR", ":8080"),
 		DatabaseURL: env("DATABASE_URL", "postgres://gotask:gotask@localhost:5432/gotask?sslmode=disable"),
+		JWTSecret:   env("JWT_SECRET", "change-me-in-production"),
 	}
 }
 

@@ -24,3 +24,7 @@ Run `make help` to see all available commands.
 - `GET /api/v1/tasks/:id`
 - `PUT /api/v1/tasks/:id` — `{ "title": "Learn Gin", "completed": true }`
 - `DELETE /api/v1/tasks/:id`
+- `POST /api/v1/auth/register` — create a customer and return a 24-hour JWT
+- `POST /api/v1/auth/login` — authenticate a customer and return a 24-hour JWT
+
+Set `JWT_SECRET` in `.env` to a long random value before running outside local development.
