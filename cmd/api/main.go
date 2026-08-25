@@ -6,6 +6,7 @@ import (
 	"gotask/internal/auth"
 	"gotask/internal/config"
 	"gotask/internal/database"
+	gotaskemail "gotask/internal/email"
 	"gotask/internal/me"
 	apiresponse "gotask/internal/response"
 	"gotask/internal/task"
@@ -26,7 +27,8 @@ func main() {
 	}
 
 	taskHandler := task.NewHandler(task.NewService(task.NewRepository(db)))
-	authHandler := auth.NewHandler(auth.NewService(auth.NewRepository(db), cfg.JWTSecret))
+	emailService := gotaskemail.NewResendService(cfg.ResendAPIKey, cfg.ResendFromEmail)
+	authHandler := auth.NewHandler(auth.NewService(auth.NewRepository(db), cfg.JWTSecret, emailService))
 	meHandler := me.NewHandler(me.NewService(me.NewRepository(db)))
 
 	router := gin.Default()

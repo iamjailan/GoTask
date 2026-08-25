@@ -29,6 +29,24 @@ type loginRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type confirmEmailRequest struct {
+	Email string `json:"email" binding:"required,email"`
+	Code  string `json:"code" binding:"required,len=6,numeric"`
+}
+
+type verificationResponse struct {
+	Message   string           `json:"message"`
+	Customer  customerResponse `json:"customer"`
+	Token     string           `json:"token"`
+	ExpiresAt time.Time        `json:"expires_at"`
+}
+
+type registrationResponse struct {
+	Email                string `json:"email"`
+	VerificationRequired bool   `json:"verification_required"`
+	Message              string `json:"message"`
+}
+
 type authResponse struct {
 	Token     string           `json:"token"`
 	ExpiresAt time.Time        `json:"expires_at"`
@@ -53,6 +71,7 @@ func NewHandler(service Service) *Handler { return &Handler{service: service} }
 func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	routes := router.Group("/api/v1/auth")
 	routes.POST("/register", h.register)
+	routes.POST("/confirm-email", h.confirmEmail)
 	routes.POST("/login", h.login)
 }
 
@@ -62,7 +81,7 @@ func (h *Handler) register(c *gin.Context) {
 		apiresponse.Error(c, http.StatusBadRequest, "first_name, last_name, a valid email, and a password of 8-72 characters are required")
 		return
 	}
-	model, token, err := h.service.Register(c.Request.Context(), types.RegisterInput{
+	model, _, err := h.service.Register(c.Request.Context(), types.RegisterInput{
 		FirstName: strings.TrimSpace(req.FirstName), LastName: strings.TrimSpace(req.LastName),
 		Email: req.Email, Password: req.Password, Phone: strings.TrimSpace(req.Phone), AvatarURL: req.AvatarURL,
 	})
@@ -70,7 +89,27 @@ func (h *Handler) register(c *gin.Context) {
 		h.writeError(c, err)
 		return
 	}
-	apiresponse.JSON(c, http.StatusCreated, newAuthResponse(model, token))
+	apiresponse.JSON(c, http.StatusAccepted, registrationResponse{
+		Email: model.Email, VerificationRequired: true,
+		Message: "verification code sent to your email; confirm it before logging in",
+	})
+}
+
+func (h *Handler) confirmEmail(c *gin.Context) {
+	var req confirmEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		apiresponse.Error(c, http.StatusBadRequest, "a valid email and 6-digit verification code are required")
+		return
+	}
+	model, token, err := h.service.ConfirmEmail(c.Request.Context(), req.Email, req.Code)
+	if err != nil {
+		h.writeError(c, err)
+		return
+	}
+	apiresponse.JSON(c, http.StatusOK, verificationResponse{
+		Message: "email verified successfully", Customer: newCustomerResponse(model),
+		Token: token, ExpiresAt: time.Now().UTC().Add(utils.TokenLifetime),
+	})
 }
 
 func (h *Handler) login(c *gin.Context) {
@@ -91,8 +130,10 @@ func (h *Handler) writeError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrEmailExists):
 		apiresponse.Error(c, http.StatusConflict, "email already exists")
-	case errors.Is(err, ErrInvalidCredentials), errors.Is(err, ErrInactive):
+	case errors.Is(err, ErrInvalidCredentials), errors.Is(err, ErrInactive), errors.Is(err, ErrEmailNotVerified):
 		apiresponse.Error(c, http.StatusUnauthorized, "invalid credentials")
+	case errors.Is(err, ErrInvalidOTP), errors.Is(err, ErrOTPExpired):
+		apiresponse.Error(c, http.StatusBadRequest, "invalid or expired verification code")
 	default:
 		apiresponse.Error(c, http.StatusInternalServerError, "internal server error")
 	}
@@ -104,4 +145,10 @@ func newAuthResponse(model models.Model, token string) authResponse {
 		Phone: model.Phone, AvatarURL: model.AvatarURL, Role: model.Role, IsActive: model.IsActive,
 		CreatedAt: model.CreatedAt, UpdatedAt: model.UpdatedAt,
 	}}
+}
+
+func newCustomerResponse(model models.Model) customerResponse {
+	return customerResponse{ID: model.ID, FirstName: model.FirstName, LastName: model.LastName,
+		Email: model.Email, Phone: model.Phone, AvatarURL: model.AvatarURL, Role: model.Role,
+		IsActive: model.IsActive, CreatedAt: model.CreatedAt, UpdatedAt: model.UpdatedAt}
 }

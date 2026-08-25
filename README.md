@@ -33,6 +33,8 @@ Run `make help` to see all available commands.
 - `PUT /api/v1/tasks/:id` — `{ "title": "Learn Gin", "completed": true }`
 - `DELETE /api/v1/tasks/:id`
 - `POST /api/v1/auth/register` — create a customer and return a 24-hour JWT
+- `POST /api/v1/auth/register` — create a pending registration and send a 6-digit email verification code (`202 Accepted`; no customer account exists yet)
+- `POST /api/v1/auth/confirm-email` — `{ "email": "user@example.com", "code": "123456" }`; verify the code and return a 24-hour JWT
 - `POST /api/v1/auth/login` — authenticate a customer and return a 24-hour JWT
 - `GET /api/v1/me` — get the authenticated user
 - `PUT /api/v1/me` — update the authenticated user's profile (`first_name`, `last_name`, `email`, `phone`, `avatar_url`)
