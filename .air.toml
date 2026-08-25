@@ -1,0 +1,24 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  bin = "./tmp/gotask"
+  cmd = "go build -o ./tmp/gotask ./cmd/api"
+  delay = 500
+  exclude_dir = ["tmp", "vendor", ".git"]
+  exclude_regex = ["_test.go$"]
+  include_ext = ["go", "env"]
+  kill_delay = "500ms"
+  log = "tmp/air-build-errors.log"
+  send_interrupt = true
+
+[log]
+  main_only = false
+  time = true
+
+[screen]
+  clear_on_rebuild = true
+  keep_scroll = true
+
+[misc]
+  clean_on_exit = true

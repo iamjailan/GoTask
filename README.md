@@ -12,6 +12,14 @@ make setup
 make run
 ```
 
+`make run` uses [Air](https://github.com/air-verse/air) for hot reload: changes to Go files automatically rebuild and restart the API. Install it once if needed:
+
+```bash
+go install github.com/air-verse/air@v1.61.0
+```
+
+To run the API once without a file watcher, use `make start`.
+
 The API listens on `http://localhost:8080`.
 
 Run `make help` to see all available commands.
