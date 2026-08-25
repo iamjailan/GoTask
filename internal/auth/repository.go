@@ -14,6 +14,7 @@ var ErrNotFound = errors.New("customer not found")
 type Repository interface {
 	Create(context.Context, *models.Model) error
 	CreatePending(context.Context, *models.PendingRegistration) error
+	Exists(context.Context, string) (bool, error)
 	FindByEmail(context.Context, string) (models.Model, error)
 	FindPendingByEmail(context.Context, string) (models.PendingRegistration, error)
 	DeletePending(context.Context, string) error
@@ -30,6 +31,14 @@ func (r *repository) Create(ctx context.Context, model *models.Model) error {
 
 func (r *repository) CreatePending(ctx context.Context, model *models.PendingRegistration) error {
 	return r.db.WithContext(ctx).Create(model).Error
+}
+
+func (r *repository) Exists(ctx context.Context, id string) (bool, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&models.Model{}).Where("id = ?", id).Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
 
 func (r *repository) FindByEmail(ctx context.Context, email string) (models.Model, error) {

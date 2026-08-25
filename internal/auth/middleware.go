@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -16,7 +17,19 @@ const (
 	CustomerIDHeader = "X-User-ID"
 )
 
+type UserLookup interface {
+	Exists(context.Context, string) (bool, error)
+}
+
 func JWTMiddleware(secret string) gin.HandlerFunc {
+	return jwtMiddleware(secret, nil)
+}
+
+func JWTMiddlewareWithUserStore(secret string, users UserLookup) gin.HandlerFunc {
+	return jwtMiddleware(secret, users)
+}
+
+func jwtMiddleware(secret string, users UserLookup) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		const bearerPrefix = "Bearer "
 		header := c.GetHeader("Authorization")
@@ -47,6 +60,13 @@ func JWTMiddleware(secret string) gin.HandlerFunc {
 		if !ok || !idOK || customerID == "" {
 			unauthorized(c)
 			return
+		}
+		if users != nil {
+			exists, err := users.Exists(c.Request.Context(), customerID)
+			if err != nil || !exists {
+				unauthorized(c)
+				return
+			}
 		}
 		c.Set(CustomerIDKey, customerID)
 		c.Request.Header.Set(CustomerIDHeader, customerID)

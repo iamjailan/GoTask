@@ -103,7 +103,7 @@ func (h *Handler) delete(c *gin.Context) {
 func (h *Handler) writeError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrNotFound):
-		apiresponse.Error(c, http.StatusNotFound, "user not found")
+		apiresponse.Error(c, http.StatusUnauthorized, "unauthorized")
 	case errors.Is(err, ErrEmailExist):
 		apiresponse.Error(c, http.StatusConflict, "email already exists")
 	default:

@@ -28,16 +28,18 @@ func main() {
 
 	taskHandler := task.NewHandler(task.NewService(task.NewRepository(db)))
 	emailService := gotaskemail.NewResendService(cfg.ResendAPIKey, cfg.ResendFromEmail)
-	authHandler := auth.NewHandler(auth.NewService(auth.NewRepository(db), cfg.JWTSecret, emailService))
+	authRepository := auth.NewRepository(db)
+	authHandler := auth.NewHandler(auth.NewService(authRepository, cfg.JWTSecret, emailService))
 	meHandler := me.NewHandler(me.NewService(me.NewRepository(db)))
+	protectedMiddleware := auth.JWTMiddlewareWithUserStore(cfg.JWTSecret, authRepository)
 
 	router := gin.Default()
 	router.GET("/health", func(c *gin.Context) {
 		apiresponse.JSON(c, 200, gin.H{"status": "ok"})
 	})
-	taskHandler.RegisterRoutes(router, auth.JWTMiddleware(cfg.JWTSecret))
+	taskHandler.RegisterRoutes(router, protectedMiddleware)
 	authHandler.RegisterRoutes(router)
-	meHandler.RegisterRoutes(router, auth.JWTMiddleware(cfg.JWTSecret))
+	meHandler.RegisterRoutes(router, protectedMiddleware)
 
 	log.Printf("API listening on %s", cfg.HTTPAddr)
 	if err := router.Run(cfg.HTTPAddr); err != nil {
