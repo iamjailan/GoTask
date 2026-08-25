@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gotask/internal/auth"
+	apiresponse "gotask/internal/response"
 )
 
 type Handler struct{ service Service }
@@ -52,7 +53,7 @@ func (h *Handler) create(c *gin.Context) {
 	}
 	var req taskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required and must be 1-255 characters"})
+		apiresponse.Error(c, http.StatusBadRequest, "title is required and must be 1-255 characters")
 		return
 	}
 	model, err := h.service.Create(c.Request.Context(), CreateInput{
@@ -63,7 +64,7 @@ func (h *Handler) create(c *gin.Context) {
 		h.serverError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, response(model))
+	apiresponse.JSON(c, http.StatusCreated, response(model))
 }
 
 func (h *Handler) list(c *gin.Context) {
@@ -80,7 +81,7 @@ func (h *Handler) list(c *gin.Context) {
 	for _, model := range models {
 		responses = append(responses, response(model))
 	}
-	c.JSON(http.StatusOK, responses)
+	apiresponse.JSON(c, http.StatusOK, responses)
 }
 
 func (h *Handler) get(c *gin.Context) {
@@ -97,7 +98,7 @@ func (h *Handler) get(c *gin.Context) {
 		h.writeServiceError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response(model))
+	apiresponse.JSON(c, http.StatusOK, response(model))
 }
 
 func (h *Handler) update(c *gin.Context) {
@@ -111,7 +112,7 @@ func (h *Handler) update(c *gin.Context) {
 	}
 	var req taskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title is required and must be 1-255 characters"})
+		apiresponse.Error(c, http.StatusBadRequest, "title is required and must be 1-255 characters")
 		return
 	}
 	model, err := h.service.Update(c.Request.Context(), customerID, id, UpdateInput{
@@ -122,7 +123,7 @@ func (h *Handler) update(c *gin.Context) {
 		h.writeServiceError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, response(model))
+	apiresponse.JSON(c, http.StatusOK, response(model))
 }
 
 func (h *Handler) delete(c *gin.Context) {
@@ -138,14 +139,15 @@ func (h *Handler) delete(c *gin.Context) {
 		h.writeServiceError(c, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	apiresponse.JSON(c, http.StatusOK, nil)
 }
 
 func currentCustomerID(c *gin.Context) (string, bool) {
 	value, exists := c.Get(auth.CustomerIDKey)
 	customerID, isString := value.(string)
 	if !exists || !isString || customerID == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		apiresponse.Error(c, http.StatusUnauthorized, "unauthorized")
+		c.Abort()
 		return "", false
 	}
 	return customerID, true
@@ -154,7 +156,7 @@ func currentCustomerID(c *gin.Context) (string, bool) {
 func parseID(c *gin.Context) (string, bool) {
 	id := c.Param("id")
 	if !strings.HasPrefix(id, "tsk_") || len(id) <= len("tsk_") {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid task id"})
+		apiresponse.Error(c, http.StatusBadRequest, "invalid task id")
 		return "", false
 	}
 	return id, true
@@ -162,14 +164,14 @@ func parseID(c *gin.Context) (string, bool) {
 
 func (h *Handler) writeServiceError(c *gin.Context, err error) {
 	if errors.Is(err, ErrNotFound) {
-		c.JSON(http.StatusNotFound, gin.H{"error": "task not found"})
+		apiresponse.Error(c, http.StatusNotFound, "task not found")
 		return
 	}
 	h.serverError(c, err)
 }
 
 func (h *Handler) serverError(c *gin.Context, _ error) {
-	c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+	apiresponse.Error(c, http.StatusInternalServerError, "internal server error")
 }
 
 func response(model Model) taskResponse {
