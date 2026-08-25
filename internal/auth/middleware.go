@@ -4,13 +4,16 @@ import (
 	"net/http"
 	"strings"
 
+	apiresponse "gotask/internal/response"
+
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 const (
-	CustomerIDKey   = "customer_id"
-	CustomerRoleKey = "customer_role"
+	CustomerIDKey    = "customer_id"
+	CustomerRoleKey  = "customer_role"
+	CustomerIDHeader = "X-User-ID"
 )
 
 func JWTMiddleware(secret string) gin.HandlerFunc {
@@ -46,6 +49,7 @@ func JWTMiddleware(secret string) gin.HandlerFunc {
 			return
 		}
 		c.Set(CustomerIDKey, customerID)
+		c.Request.Header.Set(CustomerIDHeader, customerID)
 		if role, ok := claims["role"].(string); ok {
 			c.Set(CustomerRoleKey, role)
 		}
@@ -54,5 +58,6 @@ func JWTMiddleware(secret string) gin.HandlerFunc {
 }
 
 func unauthorized(c *gin.Context) {
-	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+	apiresponse.Error(c, http.StatusUnauthorized, "unauthorized")
+	c.Abort()
 }

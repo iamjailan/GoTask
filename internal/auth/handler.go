@@ -10,6 +10,7 @@ import (
 	"gotask/internal/auth/models"
 	"gotask/internal/auth/types"
 	"gotask/internal/auth/utils"
+	apiresponse "gotask/internal/response"
 )
 
 type Handler struct{ service Service }
@@ -58,7 +59,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 func (h *Handler) register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "first_name, last_name, a valid email, and a password of 8-72 characters are required"})
+		apiresponse.Error(c, http.StatusBadRequest, "first_name, last_name, a valid email, and a password of 8-72 characters are required")
 		return
 	}
 	model, token, err := h.service.Register(c.Request.Context(), types.RegisterInput{
@@ -69,13 +70,13 @@ func (h *Handler) register(c *gin.Context) {
 		h.writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusCreated, newAuthResponse(model, token))
+	apiresponse.JSON(c, http.StatusCreated, newAuthResponse(model, token))
 }
 
 func (h *Handler) login(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "valid email and password are required"})
+		apiresponse.Error(c, http.StatusBadRequest, "valid email and password are required")
 		return
 	}
 	model, token, err := h.service.Login(c.Request.Context(), req.Email, req.Password)
@@ -83,17 +84,17 @@ func (h *Handler) login(c *gin.Context) {
 		h.writeError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, newAuthResponse(model, token))
+	apiresponse.JSON(c, http.StatusOK, newAuthResponse(model, token))
 }
 
 func (h *Handler) writeError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrEmailExists):
-		c.JSON(http.StatusConflict, gin.H{"error": "email already exists"})
+		apiresponse.Error(c, http.StatusConflict, "email already exists")
 	case errors.Is(err, ErrInvalidCredentials), errors.Is(err, ErrInactive):
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+		apiresponse.Error(c, http.StatusUnauthorized, "invalid credentials")
 	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		apiresponse.Error(c, http.StatusInternalServerError, "internal server error")
 	}
 }
 

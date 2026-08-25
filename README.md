@@ -34,5 +34,8 @@ Run `make help` to see all available commands.
 - `DELETE /api/v1/tasks/:id`
 - `POST /api/v1/auth/register` — create a customer and return a 24-hour JWT
 - `POST /api/v1/auth/login` — authenticate a customer and return a 24-hour JWT
+- `GET /api/v1/me` — get the authenticated user
+- `PUT /api/v1/me` — update the authenticated user's profile (`first_name`, `last_name`, `email`, `phone`, `avatar_url`)
+- `DELETE /api/v1/me` — delete the authenticated user
 
 Set `JWT_SECRET` in `.env` to a long random value before running outside local development.
