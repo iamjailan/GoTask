@@ -70,7 +70,7 @@ type customerResponse struct {
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
 func (h *Handler) RegisterRoutes(router *gin.Engine) {
-	routes := router.Group("/api/v1/auth")
+	routes := router.Group("/customer/auth")
 	routes.POST("/register", h.register)
 	routes.POST("/confirm-email", h.confirmEmail)
 	routes.POST("/login", h.login)

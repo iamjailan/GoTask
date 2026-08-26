@@ -21,8 +21,8 @@ func TestRegisterRoutesAddsCredentialEndpoints(t *testing.T) {
 		routes[route.Method+" "+route.Path] = true
 	}
 	for _, expected := range []string{
-		http.MethodPut + " /api/v1/me/email",
-		http.MethodPut + " /api/v1/me/password",
+		http.MethodPut + " /customer/me/email",
+		http.MethodPut + " /customer/me/password",
 	} {
 		if !routes[expected] {
 			t.Errorf("missing route %s", expected)
@@ -34,7 +34,7 @@ func TestProfileUpdateRejectsCredentialFields(t *testing.T) {
 	router := gin.New()
 	NewHandler(&stubService{}).RegisterRoutes(router, func(c *gin.Context) { c.Next() })
 
-	req := httptest.NewRequest(http.MethodPut, "/api/v1/me", strings.NewReader(`{"email":"new@example.com"}`))
+	req := httptest.NewRequest(http.MethodPut, "/customer/me", strings.NewReader(`{"email":"new@example.com"}`))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-User-ID", "cus_123")
 	recorder := httptest.NewRecorder()

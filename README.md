@@ -29,19 +29,19 @@ Run `make help` to see all available commands.
 ## Endpoints
 
 - `GET /health`
-- `POST /api/v1/tasks` — `{ "title": "Learn Go", "description": "...", "status": "pending", "priority": "medium", "due_date": "2026-09-01T12:00:00Z" }` (requires `Authorization: Bearer <token>`)
-- `GET /api/v1/tasks` (requires `Authorization: Bearer <token>`)
-- `GET /api/v1/tasks/:id` — IDs use the `tsk_<UUID>` format
-- `PUT /api/v1/tasks/:id` — `{ "title": "Learn Gin", "completed": true }`
-- `DELETE /api/v1/tasks/:id`
-- `POST /api/v1/auth/register` — create a customer and return a 24-hour JWT
-- `POST /api/v1/auth/register` — create a pending registration and send a 6-digit email verification code (`202 Accepted`; no customer account exists yet)
-- `POST /api/v1/auth/confirm-email` — `{ "email": "user@example.com", "code": "123456" }`; verify the code and return a 24-hour JWT
-- `POST /api/v1/auth/login` — authenticate a customer and return a 24-hour JWT
-- `GET /api/v1/me` — get the authenticated user
-- `PUT /api/v1/me` — update the authenticated user's profile (`first_name`, `last_name`, `phone`, `avatar_url`)
-- `PUT /api/v1/me/email` — change the email with `{ "email": "new@example.com", "current_password": "..." }`; sends a change notification to the previous email address
-- `PUT /api/v1/me/password` — change the password with `{ "current_password": "...", "new_password": "..." }`
-- `DELETE /api/v1/me` — delete the authenticated user
+- `POST /customer/tasks` — `{ "title": "Learn Go", "description": "...", "status": "pending", "priority": "medium", "due_date": "2026-09-01T12:00:00Z" }` (requires `Authorization: Bearer <token>`)
+- `GET /customer/tasks` (requires `Authorization: Bearer <token>`)
+- `GET /customer/tasks/:id` — IDs use the `tsk_<UUID>` format
+- `PUT /customer/tasks/:id` — `{ "title": "Learn Gin", "completed": true }`
+- `DELETE /customer/tasks/:id`
+- `POST /customer/auth/register` — create a customer and return a 24-hour JWT
+- `POST /customer/auth/register` — create a pending registration and send a 6-digit email verification code (`202 Accepted`; no customer account exists yet)
+- `POST /customer/auth/confirm-email` — `{ "email": "user@example.com", "code": "123456" }`; verify the code and return a 24-hour JWT
+- `POST /customer/auth/login` — authenticate a customer and return a 24-hour JWT
+- `GET /customer/me` — get the authenticated user
+- `PUT /customer/me` — update the authenticated user's profile (`first_name`, `last_name`, `phone`, `avatar_url`)
+- `PUT /customer/me/email` — change the email with `{ "email": "new@example.com", "current_password": "..." }`; sends a change notification to the previous email address
+- `PUT /customer/me/password` — change the password with `{ "current_password": "...", "new_password": "..." }`
+- `DELETE /customer/me` — delete the authenticated user
 
 Set `JWT_SECRET` in `.env` to a long random value before running outside local development.

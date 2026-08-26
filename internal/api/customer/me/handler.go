@@ -17,7 +17,7 @@ type Handler struct{ service Service }
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
 func (h *Handler) RegisterRoutes(router *gin.Engine, middleware gin.HandlerFunc) {
-	routes := router.Group("/api/v1/me", middleware)
+	routes := router.Group("/customer/me", middleware)
 	routes.GET("", h.get)
 	routes.PUT("", h.update)
 	routes.PUT("/email", h.changeEmail)
@@ -59,7 +59,7 @@ func (h *Handler) update(c *gin.Context) {
 		return
 	}
 	if req.DeprecatedEmail != nil || req.DeprecatedPassword != nil {
-		apiresponse.Error(c, http.StatusBadRequest, "use the dedicated /api/v1/me/email or /api/v1/me/password endpoint for credential changes")
+		apiresponse.Error(c, http.StatusBadRequest, "use the dedicated /customer/me/email or /customer/me/password endpoint for credential changes")
 		return
 	}
 	model, err := h.service.UpdateProfile(c.Request.Context(), id, metypes.ProfileUpdateInput{

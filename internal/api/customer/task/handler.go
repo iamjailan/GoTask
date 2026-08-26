@@ -38,7 +38,7 @@ type taskResponse struct {
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
 func (h *Handler) RegisterRoutes(router *gin.Engine, middleware gin.HandlerFunc) {
-	routes := router.Group("/api/v1/tasks", middleware)
+	routes := router.Group("/customer/tasks", middleware)
 	routes.POST("", h.create)
 	routes.GET("", h.list)
 	routes.GET("/:id", h.get)
