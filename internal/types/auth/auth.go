@@ -1,4 +1,4 @@
-package types
+package auth
 
 type RegisterInput struct {
 	FirstName string

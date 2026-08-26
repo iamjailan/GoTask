@@ -4,36 +4,15 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"gotask/internal/auth"
 	"gotask/internal/auth/models"
 	apiresponse "gotask/internal/response"
+	metypes "gotask/internal/types/me"
 )
 
 type Handler struct{ service Service }
-
-type updateRequest struct {
-	FirstName string `json:"first_name" binding:"omitempty,max=100"`
-	LastName  string `json:"last_name" binding:"omitempty,max=100"`
-	Email     string `json:"email" binding:"omitempty,email,max=255"`
-	Phone     string `json:"phone" binding:"omitempty,max=30"`
-	AvatarURL string `json:"avatar_url" binding:"omitempty,url"`
-}
-
-type response struct {
-	ID        string    `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone,omitempty"`
-	AvatarURL string    `json:"avatar_url,omitempty"`
-	Role      string    `json:"role"`
-	IsActive  bool      `json:"is_active"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
 
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
@@ -41,6 +20,8 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, middleware gin.HandlerFunc)
 	routes := router.Group("/api/v1/me", middleware)
 	routes.GET("", h.get)
 	routes.PUT("", h.update)
+	routes.PUT("/email", h.changeEmail)
+	routes.PUT("/password", h.changePassword)
 	routes.DELETE("", h.delete)
 }
 
@@ -72,13 +53,17 @@ func (h *Handler) update(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req updateRequest
+	var req metypes.ProfileUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		apiresponse.Error(c, http.StatusBadRequest, "invalid user profile")
 		return
 	}
-	model, err := h.service.Update(c.Request.Context(), id, UpdateInput{
-		FirstName: req.FirstName, LastName: req.LastName, Email: req.Email,
+	if req.DeprecatedEmail != nil || req.DeprecatedPassword != nil {
+		apiresponse.Error(c, http.StatusBadRequest, "use the dedicated /api/v1/me/email or /api/v1/me/password endpoint for credential changes")
+		return
+	}
+	model, err := h.service.UpdateProfile(c.Request.Context(), id, metypes.ProfileUpdateInput{
+		FirstName: req.FirstName, LastName: req.LastName,
 		Phone: req.Phone, AvatarURL: req.AvatarURL,
 	})
 	if err != nil {
@@ -86,6 +71,45 @@ func (h *Handler) update(c *gin.Context) {
 		return
 	}
 	apiresponse.JSON(c, http.StatusOK, newResponse(model))
+}
+
+func (h *Handler) changeEmail(c *gin.Context) {
+	id, ok := currentUserID(c)
+	if !ok {
+		return
+	}
+	var req metypes.ChangeEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		apiresponse.Error(c, http.StatusBadRequest, "a valid email and current password are required")
+		return
+	}
+	model, err := h.service.ChangeEmail(c.Request.Context(), id, metypes.ChangeEmailInput{
+		Email: req.Email, CurrentPassword: req.CurrentPassword,
+	})
+	if err != nil {
+		h.writeError(c, err)
+		return
+	}
+	apiresponse.JSON(c, http.StatusOK, newResponse(model))
+}
+
+func (h *Handler) changePassword(c *gin.Context) {
+	id, ok := currentUserID(c)
+	if !ok {
+		return
+	}
+	var req metypes.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		apiresponse.Error(c, http.StatusBadRequest, "current_password and a new_password of 8-72 characters are required")
+		return
+	}
+	if err := h.service.ChangePassword(c.Request.Context(), id, metypes.ChangePasswordInput{
+		CurrentPassword: req.CurrentPassword, NewPassword: req.NewPassword,
+	}); err != nil {
+		h.writeError(c, err)
+		return
+	}
+	apiresponse.JSON(c, http.StatusOK, gin.H{"message": "password updated successfully"})
 }
 
 func (h *Handler) delete(c *gin.Context) {
@@ -106,13 +130,23 @@ func (h *Handler) writeError(c *gin.Context, err error) {
 		apiresponse.Error(c, http.StatusUnauthorized, "unauthorized")
 	case errors.Is(err, ErrEmailExist):
 		apiresponse.Error(c, http.StatusConflict, "email already exists")
+	case errors.Is(err, ErrEmailUnchanged):
+		apiresponse.Error(c, http.StatusBadRequest, "new email must be different from the current email")
+	case errors.Is(err, ErrPasswordUnchanged):
+		apiresponse.Error(c, http.StatusBadRequest, "new password must be different from the current password")
+	case errors.Is(err, ErrInvalidCurrentPassword):
+		apiresponse.Error(c, http.StatusUnauthorized, "current password is incorrect")
+	case errors.Is(err, ErrEmailNotificationUnavailable):
+		apiresponse.Error(c, http.StatusServiceUnavailable, "email change notification is unavailable")
+	case errors.Is(err, ErrEmailNotification):
+		apiresponse.Error(c, http.StatusBadGateway, "email change notification failed")
 	default:
 		apiresponse.Error(c, http.StatusInternalServerError, "internal server error")
 	}
 }
 
-func newResponse(model models.Model) response {
-	return response{ID: model.ID, FirstName: model.FirstName, LastName: model.LastName,
+func newResponse(model models.Model) metypes.UserResponse {
+	return metypes.UserResponse{ID: model.ID, FirstName: model.FirstName, LastName: model.LastName,
 		Email: model.Email, Phone: model.Phone, AvatarURL: model.AvatarURL, Role: model.Role,
 		IsActive: model.IsActive, CreatedAt: model.CreatedAt, UpdatedAt: model.UpdatedAt}
 }

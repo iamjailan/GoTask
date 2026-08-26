@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"gotask/internal/auth/models"
-	"gotask/internal/auth/types"
 	"gotask/internal/auth/utils"
 	gotaskemail "gotask/internal/email"
+	authtypes "gotask/internal/types/auth"
 )
 
 var (
@@ -22,7 +22,7 @@ var (
 )
 
 type Service interface {
-	Register(context.Context, types.RegisterInput) (models.Model, string, error)
+	Register(context.Context, authtypes.RegisterInput) (models.Model, string, error)
 	Login(context.Context, string, string) (models.Model, string, error)
 	ConfirmEmail(context.Context, string, string) (models.Model, string, error)
 }
@@ -37,7 +37,7 @@ func NewService(repo Repository, jwtSecret string, emailService gotaskemail.Serv
 	return &service{repo: repo, jwtSecret: []byte(jwtSecret), email: emailService}
 }
 
-func (s *service) Register(ctx context.Context, input types.RegisterInput) (models.Model, string, error) {
+func (s *service) Register(ctx context.Context, input authtypes.RegisterInput) (models.Model, string, error) {
 	email := utils.NormalizeEmail(input.Email)
 	if _, err := s.repo.FindByEmail(ctx, email); err == nil {
 		return models.Model{}, "", ErrEmailExists

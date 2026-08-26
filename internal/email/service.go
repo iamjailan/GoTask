@@ -7,16 +7,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html"
 	"net/http"
 	"strings"
 	"time"
+
+	"gotask/internal/email/template"
+	emailtypes "gotask/internal/types/email"
 )
 
 var ErrNotConfigured = errors.New("email service is not configured")
 
 type Service interface {
 	SendVerificationCode(context.Context, string, string, string) error
+	SendEmailChangedNotification(context.Context, string, string, string) error
 }
 
 type resendService struct {
@@ -25,28 +28,26 @@ type resendService struct {
 	client *http.Client
 }
 
-type resendEmailRequest struct {
-	From    string   `json:"from"`
-	To      []string `json:"to"`
-	Subject string   `json:"subject"`
-	HTML    string   `json:"html"`
-}
-
 func NewResendService(apiKey, from string) Service {
 	return &resendService{apiKey: strings.TrimSpace(apiKey), from: strings.TrimSpace(from), client: &http.Client{Timeout: 10 * time.Second}}
 }
 
 func (s *resendService) SendVerificationCode(ctx context.Context, recipient, name, code string) error {
+	return s.send(ctx, recipient, "Verify your GoTask email", template.VerificationCodeTemplate(name, code))
+}
+
+func (s *resendService) SendEmailChangedNotification(ctx context.Context, recipient, name, newEmail string) error {
+	return s.send(ctx, recipient, "Your GoTask email was changed", template.EmailChangedTemplate(name, newEmail))
+}
+
+func (s *resendService) send(ctx context.Context, recipient, subject, body string) error {
 	if s.apiKey == "" || s.from == "" {
 		return ErrNotConfigured
 	}
 
 	recipient = strings.TrimSpace(recipient)
-	name = html.EscapeString(strings.TrimSpace(name))
-	code = html.EscapeString(code)
-	payload, err := json.Marshal(resendEmailRequest{
-		From: s.from, To: []string{recipient}, Subject: "Verify your GoTask email",
-		HTML: fmt.Sprintf("<p>Hello %s,</p><p>Your GoTask verification code is:</p><p><strong>%s</strong></p><p>This code expires in 10 minutes.</p>", name, code),
+	payload, err := json.Marshal(emailtypes.ResendEmailRequest{
+		From: s.from, To: []string{recipient}, Subject: subject, HTML: body,
 	})
 	if err != nil {
 		return err

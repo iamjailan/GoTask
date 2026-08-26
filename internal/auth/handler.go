@@ -8,9 +8,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gotask/internal/auth/models"
-	"gotask/internal/auth/types"
 	"gotask/internal/auth/utils"
 	apiresponse "gotask/internal/response"
+	authtypes "gotask/internal/types/auth"
 )
 
 type Handler struct{ service Service }
@@ -81,7 +81,7 @@ func (h *Handler) register(c *gin.Context) {
 		apiresponse.Error(c, http.StatusBadRequest, "first_name, last_name, a valid email, and a password of 8-72 characters are required")
 		return
 	}
-	model, _, err := h.service.Register(c.Request.Context(), types.RegisterInput{
+	model, _, err := h.service.Register(c.Request.Context(), authtypes.RegisterInput{
 		FirstName: strings.TrimSpace(req.FirstName), LastName: strings.TrimSpace(req.LastName),
 		Email: req.Email, Password: req.Password, Phone: strings.TrimSpace(req.Phone), AvatarURL: req.AvatarURL,
 	})

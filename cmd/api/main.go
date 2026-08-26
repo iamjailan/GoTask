@@ -30,7 +30,7 @@ func main() {
 	emailService := gotaskemail.NewResendService(cfg.ResendAPIKey, cfg.ResendFromEmail)
 	authRepository := auth.NewRepository(db)
 	authHandler := auth.NewHandler(auth.NewService(authRepository, cfg.JWTSecret, emailService))
-	meHandler := me.NewHandler(me.NewService(me.NewRepository(db)))
+	meHandler := me.NewHandler(me.NewService(me.NewRepository(db), emailService))
 	protectedMiddleware := auth.JWTMiddlewareWithUserStore(cfg.JWTSecret, authRepository)
 
 	router := gin.Default()
