@@ -12,6 +12,7 @@ type Config struct {
 	JWTSecret       string
 	ResendAPIKey    string
 	ResendFromEmail string
+	MigrationsPath  string
 }
 
 func Load() Config {
@@ -23,6 +24,7 @@ func Load() Config {
 		JWTSecret:       env("JWT_SECRET", "change-me-in-production"),
 		ResendAPIKey:    env("RESEND_API_KEY", ""),
 		ResendFromEmail: env("RESEND_FROM_EMAIL", ""),
+		MigrationsPath:  env("MIGRATIONS_PATH", "migrations"),
 	}
 }
 

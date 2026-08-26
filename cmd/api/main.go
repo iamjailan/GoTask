@@ -22,10 +22,6 @@ func main() {
 		log.Fatalf("open database: %v", err)
 	}
 
-	if err := database.Migrate(db); err != nil {
-		log.Fatalf("migrate database: %v", err)
-	}
-
 	taskHandler := task.NewHandler(task.NewService(task.NewRepository(db)))
 	emailService := gotaskemail.NewResendService(cfg.ResendAPIKey, cfg.ResendFromEmail)
 	authRepository := auth.NewRepository(db)

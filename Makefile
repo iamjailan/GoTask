@@ -1,12 +1,14 @@
 GO ?= go
 AIR_BIN ?= $(shell command -v air 2>/dev/null || printf '%s/bin/air' "$$($(GO) env GOPATH)")
 
-.PHONY: help setup migrate run dev start test vet build fmt
+.PHONY: help setup migrate migrate-down migrate-version run dev start test vet build fmt
 
 help:
 	@echo "Available commands:"
 	@echo "  make setup    Run migrations against local PostgreSQL"
 	@echo "  make migrate  Run database migrations"
+	@echo "  make migrate-down  Roll back the most recent database migration"
+	@echo "  make migrate-version  Show the current database migration version"
 	@echo "  make run      Run the API server with hot reload"
 	@echo "  make start    Run the API server once without hot reload"
 	@echo "  make test     Run tests"
@@ -17,7 +19,13 @@ help:
 setup: migrate
 
 migrate:
-	$(GO) run ./cmd/migrate
+	$(GO) run -mod=readonly ./cmd/migrate
+
+migrate-down:
+	$(GO) run -mod=readonly ./cmd/migrate -direction down
+
+migrate-version:
+	$(GO) run -mod=readonly ./cmd/migrate -direction version
 
 run:
 	$(MAKE) dev

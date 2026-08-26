@@ -12,6 +12,8 @@ make setup
 make run
 ```
 
+Schema changes are tracked as ordered SQL files in `migrations/`. Apply pending migrations with `make migrate`; `make migrate-down` rolls back one migration, and `make migrate-version` shows the recorded version. Create a new numbered `*.up.sql` and matching `*.down.sql` file for every schema change. The API does not change the schema during startup.
+
 `make run` uses [Air](https://github.com/air-verse/air) for hot reload: changes to Go files automatically rebuild and restart the API. Install it once if needed:
 
 ```bash
