@@ -9,9 +9,11 @@ import (
 	"gotask/internal/config"
 	"gotask/internal/database"
 	gotaskemail "gotask/internal/email"
+	"gotask/internal/ratelimit"
 	response "gotask/internal/utils/response"
 
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 // @title GoTask API
@@ -40,13 +42,19 @@ func main() {
 	authHandler := auth.NewHandler(auth.NewService(authRepository, cfg.JWTSecret, emailService))
 	meHandler := me.NewHandler(me.NewService(me.NewRepository(db), emailService))
 	protectedMiddleware := auth.JWTMiddlewareWithUserStore(cfg.JWTSecret, authRepository)
+	apiRateLimit := ratelimit.New(10, time.Minute).Middleware()
+	emailRateLimit := ratelimit.New(3, time.Minute).Middleware()
 
 	router := gin.Default()
-	router.GET("/health", health)
+	if err := router.SetTrustedProxies(nil); err != nil {
+		log.Fatalf("configure trusted proxies: %v", err)
+	}
 	registerSwaggerRoutes(router, cfg.SwaggerUsername, cfg.SwaggerPassword)
+	router.Use(apiRateLimit)
+	router.GET("/health", health)
 	taskHandler.RegisterRoutes(router, protectedMiddleware)
-	authHandler.RegisterRoutes(router)
-	meHandler.RegisterRoutes(router, protectedMiddleware)
+	authHandler.RegisterRoutes(router, emailRateLimit)
+	meHandler.RegisterRoutes(router, protectedMiddleware, emailRateLimit)
 
 	log.Printf("API listening on %s", cfg.HTTPAddr)
 	if err := router.Run(cfg.HTTPAddr); err != nil {
@@ -60,6 +68,7 @@ func main() {
 // @Tags System
 // @Produce json
 // @Success 200 {object} response.SuccessEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Router /health [get]
 func health(c *gin.Context) {
 	response.JSON(c, 200, gin.H{"status": "ok"})

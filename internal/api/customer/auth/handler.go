@@ -69,9 +69,9 @@ type customerResponse struct {
 
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
-func (h *Handler) RegisterRoutes(router *gin.Engine) {
+func (h *Handler) RegisterRoutes(router *gin.Engine, emailRateLimit gin.HandlerFunc) {
 	routes := router.Group("/customer/auth")
-	routes.POST("/register", h.register)
+	routes.POST("/register", emailRateLimit, h.register)
 	routes.POST("/confirm-email", h.confirmEmail)
 	routes.POST("/login", h.login)
 }
@@ -86,6 +86,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 // @Success 202 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 409 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/auth/register [post]
 func (h *Handler) register(c *gin.Context) {
@@ -117,6 +118,7 @@ func (h *Handler) register(c *gin.Context) {
 // @Param request body confirmEmailRequest true "Email verification details"
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/auth/confirm-email [post]
 func (h *Handler) confirmEmail(c *gin.Context) {
@@ -146,6 +148,7 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/auth/login [post]
 func (h *Handler) login(c *gin.Context) {

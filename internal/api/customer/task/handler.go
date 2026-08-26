@@ -56,6 +56,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, middleware gin.HandlerFunc)
 // @Success 201 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/tasks [post]
 func (h *Handler) create(c *gin.Context) {
@@ -86,6 +87,7 @@ func (h *Handler) create(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/tasks [get]
 func (h *Handler) list(c *gin.Context) {
@@ -115,6 +117,7 @@ func (h *Handler) list(c *gin.Context) {
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
 // @Failure 404 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/tasks/{id} [get]
 func (h *Handler) get(c *gin.Context) {
@@ -146,6 +149,7 @@ func (h *Handler) get(c *gin.Context) {
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
 // @Failure 404 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/tasks/{id} [put]
 func (h *Handler) update(c *gin.Context) {
@@ -183,6 +187,7 @@ func (h *Handler) update(c *gin.Context) {
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
 // @Failure 404 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/tasks/{id} [delete]
 func (h *Handler) delete(c *gin.Context) {

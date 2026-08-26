@@ -36,11 +36,11 @@ type changePasswordRequestDoc struct {
 
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
-func (h *Handler) RegisterRoutes(router *gin.Engine, middleware gin.HandlerFunc) {
+func (h *Handler) RegisterRoutes(router *gin.Engine, middleware, emailRateLimit gin.HandlerFunc) {
 	routes := router.Group("/customer/me", middleware)
 	routes.GET("", h.get)
 	routes.PUT("", h.update)
-	routes.PUT("/email", h.changeEmail)
+	routes.PUT("/email", emailRateLimit, h.changeEmail)
 	routes.PUT("/password", h.changePassword)
 	routes.DELETE("", h.delete)
 }
@@ -62,6 +62,7 @@ func currentUserID(c *gin.Context) (string, bool) {
 // @Security BearerAuth
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/me [get]
 func (h *Handler) get(c *gin.Context) {
@@ -88,6 +89,7 @@ func (h *Handler) get(c *gin.Context) {
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
 // @Failure 409 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/me [put]
 func (h *Handler) update(c *gin.Context) {
@@ -126,6 +128,7 @@ func (h *Handler) update(c *gin.Context) {
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
 // @Failure 409 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 502 {object} response.ErrorEnvelope
 // @Failure 503 {object} response.ErrorEnvelope
 // @Router /customer/me/email [put]
@@ -159,6 +162,7 @@ func (h *Handler) changeEmail(c *gin.Context) {
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Router /customer/me/password [put]
 func (h *Handler) changePassword(c *gin.Context) {
 	id, ok := currentUserID(c)
@@ -186,6 +190,7 @@ func (h *Handler) changePassword(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
+// @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/me [delete]
 func (h *Handler) delete(c *gin.Context) {

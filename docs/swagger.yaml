@@ -159,6 +159,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
         "500":
           description: Internal Server Error
           schema:
@@ -191,6 +195,10 @@ paths:
             $ref: '#/definitions/response.ErrorEnvelope'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
         "500":
@@ -228,6 +236,10 @@ paths:
           description: Conflict
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
         "500":
           description: Internal Server Error
           schema:
@@ -246,6 +258,10 @@ paths:
             $ref: '#/definitions/response.SuccessEnvelope'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
         "500":
@@ -267,6 +283,10 @@ paths:
             $ref: '#/definitions/response.SuccessEnvelope'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
         "500":
@@ -305,6 +325,10 @@ paths:
             $ref: '#/definitions/response.ErrorEnvelope'
         "409":
           description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
         "500":
@@ -346,6 +370,10 @@ paths:
           description: Conflict
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
         "502":
           description: Bad Gateway
           schema:
@@ -385,6 +413,10 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
       security:
       - BearerAuth: []
       summary: Change the authenticated customer password
@@ -401,6 +433,10 @@ paths:
             $ref: '#/definitions/response.SuccessEnvelope'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
         "500":
@@ -435,6 +471,10 @@ paths:
             $ref: '#/definitions/response.ErrorEnvelope'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
         "500":
@@ -474,6 +514,10 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
         "500":
           description: Internal Server Error
           schema:
@@ -508,6 +552,10 @@ paths:
             $ref: '#/definitions/response.ErrorEnvelope'
         "404":
           description: Not Found
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
         "500":
@@ -554,6 +602,10 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/response.ErrorEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
         "500":
           description: Internal Server Error
           schema:
@@ -573,6 +625,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.SuccessEnvelope'
+        "429":
+          description: Too Many Requests
+          schema:
+            $ref: '#/definitions/response.ErrorEnvelope'
       summary: Check API health
       tags:
       - System

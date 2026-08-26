@@ -14,7 +14,7 @@ import (
 
 func TestRegisterRoutesAddsCredentialEndpoints(t *testing.T) {
 	router := gin.New()
-	NewHandler(&stubService{}).RegisterRoutes(router, func(c *gin.Context) { c.Next() })
+	NewHandler(&stubService{}).RegisterRoutes(router, func(c *gin.Context) { c.Next() }, func(c *gin.Context) { c.Next() })
 
 	routes := make(map[string]bool)
 	for _, route := range router.Routes() {
@@ -32,7 +32,7 @@ func TestRegisterRoutesAddsCredentialEndpoints(t *testing.T) {
 
 func TestProfileUpdateRejectsCredentialFields(t *testing.T) {
 	router := gin.New()
-	NewHandler(&stubService{}).RegisterRoutes(router, func(c *gin.Context) { c.Next() })
+	NewHandler(&stubService{}).RegisterRoutes(router, func(c *gin.Context) { c.Next() }, func(c *gin.Context) { c.Next() })
 
 	req := httptest.NewRequest(http.MethodPut, "/customer/me", strings.NewReader(`{"email":"new@example.com"}`))
 	req.Header.Set("Content-Type", "application/json")

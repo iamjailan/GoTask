@@ -51,4 +51,8 @@ Open `/swagger/index.html` at the configured API address. The UI, OpenAPI JSON, 
 
 Run `make swagger` after changing API annotations to regenerate the checked-in `docs/swagger.json` and `docs/swagger.yaml` files.
 
+## Rate limits
+
+Customer API requests are limited to 10 requests per minute per client IP. Email-sending endpoints (`POST /customer/auth/register` and `PUT /customer/me/email`) are limited to 3 requests per minute per client IP. Exceeding a limit returns `429 Too Many Requests` with a `Retry-After` header.
+
 Set `JWT_SECRET` in `.env` to a long random value before running outside local development.
