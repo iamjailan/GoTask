@@ -9,7 +9,7 @@ import (
 	"gotask/internal/api/customer/auth/models"
 	"gotask/internal/api/customer/auth/utils"
 	authtypes "gotask/internal/types/auth"
-	apiresponse "gotask/internal/utils/response"
+	response "gotask/internal/utils/response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -76,10 +76,22 @@ func (h *Handler) RegisterRoutes(router *gin.Engine) {
 	routes.POST("/login", h.login)
 }
 
+// register godoc
+// @Summary Start customer registration
+// @Description Creates a pending customer registration and sends an email verification code.
+// @Tags Customer authentication
+// @Accept json
+// @Produce json
+// @Param request body registerRequest true "Registration details"
+// @Success 202 {object} response.SuccessEnvelope
+// @Failure 400 {object} response.ErrorEnvelope
+// @Failure 409 {object} response.ErrorEnvelope
+// @Failure 500 {object} response.ErrorEnvelope
+// @Router /customer/auth/register [post]
 func (h *Handler) register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		apiresponse.Error(c, http.StatusBadRequest, "first_name, last_name, a valid email, and a password of 8-72 characters are required")
+		response.Error(c, http.StatusBadRequest, "first_name, last_name, a valid email, and a password of 8-72 characters are required")
 		return
 	}
 	model, _, err := h.service.Register(c.Request.Context(), authtypes.RegisterInput{
@@ -90,16 +102,27 @@ func (h *Handler) register(c *gin.Context) {
 		h.writeError(c, err)
 		return
 	}
-	apiresponse.JSON(c, http.StatusAccepted, registrationResponse{
+	response.JSON(c, http.StatusAccepted, registrationResponse{
 		Email: model.Email, VerificationRequired: true,
 		Message: "verification code sent to your email; confirm it before logging in",
 	})
 }
 
+// confirmEmail godoc
+// @Summary Confirm customer email
+// @Description Verifies the email code and returns a customer JWT.
+// @Tags Customer authentication
+// @Accept json
+// @Produce json
+// @Param request body confirmEmailRequest true "Email verification details"
+// @Success 200 {object} response.SuccessEnvelope
+// @Failure 400 {object} response.ErrorEnvelope
+// @Failure 500 {object} response.ErrorEnvelope
+// @Router /customer/auth/confirm-email [post]
 func (h *Handler) confirmEmail(c *gin.Context) {
 	var req confirmEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		apiresponse.Error(c, http.StatusBadRequest, "a valid email and 6-digit verification code are required")
+		response.Error(c, http.StatusBadRequest, "a valid email and 6-digit verification code are required")
 		return
 	}
 	model, token, err := h.service.ConfirmEmail(c.Request.Context(), req.Email, req.Code)
@@ -107,16 +130,28 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 		h.writeError(c, err)
 		return
 	}
-	apiresponse.JSON(c, http.StatusOK, verificationResponse{
+	response.JSON(c, http.StatusOK, verificationResponse{
 		Message: "email verified successfully", Customer: newCustomerResponse(model),
 		Token: token, ExpiresAt: time.Now().UTC().Add(utils.TokenLifetime),
 	})
 }
 
+// login godoc
+// @Summary Customer login
+// @Description Authenticates a verified customer and returns a customer JWT.
+// @Tags Customer authentication
+// @Accept json
+// @Produce json
+// @Param request body loginRequest true "Customer credentials"
+// @Success 200 {object} response.SuccessEnvelope
+// @Failure 400 {object} response.ErrorEnvelope
+// @Failure 401 {object} response.ErrorEnvelope
+// @Failure 500 {object} response.ErrorEnvelope
+// @Router /customer/auth/login [post]
 func (h *Handler) login(c *gin.Context) {
 	var req loginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		apiresponse.Error(c, http.StatusBadRequest, "valid email and password are required")
+		response.Error(c, http.StatusBadRequest, "valid email and password are required")
 		return
 	}
 	model, token, err := h.service.Login(c.Request.Context(), req.Email, req.Password)
@@ -124,19 +159,19 @@ func (h *Handler) login(c *gin.Context) {
 		h.writeError(c, err)
 		return
 	}
-	apiresponse.JSON(c, http.StatusOK, newAuthResponse(model, token))
+	response.JSON(c, http.StatusOK, newAuthResponse(model, token))
 }
 
 func (h *Handler) writeError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrEmailExists):
-		apiresponse.Error(c, http.StatusConflict, "email already exists")
+		response.Error(c, http.StatusConflict, "email already exists")
 	case errors.Is(err, ErrInvalidCredentials), errors.Is(err, ErrInactive), errors.Is(err, ErrEmailNotVerified):
-		apiresponse.Error(c, http.StatusUnauthorized, "invalid credentials")
+		response.Error(c, http.StatusUnauthorized, "invalid credentials")
 	case errors.Is(err, ErrInvalidOTP), errors.Is(err, ErrOTPExpired):
-		apiresponse.Error(c, http.StatusBadRequest, "invalid or expired verification code")
+		response.Error(c, http.StatusBadRequest, "invalid or expired verification code")
 	default:
-		apiresponse.Error(c, http.StatusInternalServerError, "internal server error")
+		response.Error(c, http.StatusInternalServerError, "internal server error")
 	}
 }
 

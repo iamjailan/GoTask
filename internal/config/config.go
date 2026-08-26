@@ -13,6 +13,8 @@ type Config struct {
 	ResendAPIKey    string
 	ResendFromEmail string
 	MigrationsPath  string
+	SwaggerUsername string
+	SwaggerPassword string
 }
 
 func Load() Config {
@@ -25,6 +27,8 @@ func Load() Config {
 		ResendAPIKey:    env("RESEND_API_KEY", ""),
 		ResendFromEmail: env("RESEND_FROM_EMAIL", ""),
 		MigrationsPath:  env("MIGRATIONS_PATH", "migrations"),
+		SwaggerUsername: env("SWAGGER_USERNAME", ""),
+		SwaggerPassword: env("SWAGGER_PASSWORD", ""),
 	}
 }
 

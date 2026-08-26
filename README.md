@@ -29,6 +29,7 @@ Run `make help` to see all available commands.
 ## Endpoints
 
 - `GET /health`
+- `GET /swagger/index.html` — Swagger UI (requires HTTP Basic Auth)
 - `POST /customer/tasks` — `{ "title": "Learn Go", "description": "...", "status": "pending", "priority": "medium", "due_date": "2026-09-01T12:00:00Z" }` (requires `Authorization: Bearer <token>`)
 - `GET /customer/tasks` (requires `Authorization: Bearer <token>`)
 - `GET /customer/tasks/:id` — IDs use the `tsk_<UUID>` format
@@ -43,5 +44,11 @@ Run `make help` to see all available commands.
 - `PUT /customer/me/email` — change the email with `{ "email": "new@example.com", "current_password": "..." }`; sends a change notification to the previous email address
 - `PUT /customer/me/password` — change the password with `{ "current_password": "...", "new_password": "..." }`
 - `DELETE /customer/me` — delete the authenticated user
+
+## Swagger documentation
+
+Open `/swagger/index.html` at the configured API address. The UI, OpenAPI JSON, and Swagger assets require HTTP Basic Auth. Set `SWAGGER_USERNAME` and `SWAGGER_PASSWORD` in `.env`; the API will not start without both values.
+
+Run `make swagger` after changing API annotations to regenerate the checked-in `docs/swagger.json` and `docs/swagger.yaml` files.
 
 Set `JWT_SECRET` in `.env` to a long random value before running outside local development.

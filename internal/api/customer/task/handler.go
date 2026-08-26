@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gotask/internal/api/customer/auth"
-	apiresponse "gotask/internal/utils/response"
+	response "gotask/internal/utils/response"
 )
 
 type Handler struct{ service Service }
@@ -46,6 +46,18 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, middleware gin.HandlerFunc)
 	routes.DELETE("/:id", h.delete)
 }
 
+// create godoc
+// @Summary Create a task
+// @Tags Customer tasks
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body taskRequest true "Task details"
+// @Success 201 {object} response.SuccessEnvelope
+// @Failure 400 {object} response.ErrorEnvelope
+// @Failure 401 {object} response.ErrorEnvelope
+// @Failure 500 {object} response.ErrorEnvelope
+// @Router /customer/tasks [post]
 func (h *Handler) create(c *gin.Context) {
 	customerID, ok := currentCustomerID(c)
 	if !ok {
@@ -53,7 +65,7 @@ func (h *Handler) create(c *gin.Context) {
 	}
 	var req taskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		apiresponse.Error(c, http.StatusBadRequest, "title is required and must be 1-255 characters")
+		response.Error(c, http.StatusBadRequest, "title is required and must be 1-255 characters")
 		return
 	}
 	model, err := h.service.Create(c.Request.Context(), CreateInput{
@@ -64,9 +76,18 @@ func (h *Handler) create(c *gin.Context) {
 		h.serverError(c, err)
 		return
 	}
-	apiresponse.JSON(c, http.StatusCreated, response(model))
+	response.JSON(c, http.StatusCreated, newTaskResponse(model))
 }
 
+// list godoc
+// @Summary List tasks
+// @Tags Customer tasks
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} response.SuccessEnvelope
+// @Failure 401 {object} response.ErrorEnvelope
+// @Failure 500 {object} response.ErrorEnvelope
+// @Router /customer/tasks [get]
 func (h *Handler) list(c *gin.Context) {
 	customerID, ok := currentCustomerID(c)
 	if !ok {
@@ -79,11 +100,23 @@ func (h *Handler) list(c *gin.Context) {
 	}
 	responses := make([]taskResponse, 0, len(models))
 	for _, model := range models {
-		responses = append(responses, response(model))
+		responses = append(responses, newTaskResponse(model))
 	}
-	apiresponse.JSON(c, http.StatusOK, responses)
+	response.JSON(c, http.StatusOK, responses)
 }
 
+// get godoc
+// @Summary Get a task
+// @Tags Customer tasks
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Task ID" example(tsk_123)
+// @Success 200 {object} response.SuccessEnvelope
+// @Failure 400 {object} response.ErrorEnvelope
+// @Failure 401 {object} response.ErrorEnvelope
+// @Failure 404 {object} response.ErrorEnvelope
+// @Failure 500 {object} response.ErrorEnvelope
+// @Router /customer/tasks/{id} [get]
 func (h *Handler) get(c *gin.Context) {
 	customerID, ok := currentCustomerID(c)
 	if !ok {
@@ -98,9 +131,23 @@ func (h *Handler) get(c *gin.Context) {
 		h.writeServiceError(c, err)
 		return
 	}
-	apiresponse.JSON(c, http.StatusOK, response(model))
+	response.JSON(c, http.StatusOK, newTaskResponse(model))
 }
 
+// update godoc
+// @Summary Update a task
+// @Tags Customer tasks
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Task ID" example(tsk_123)
+// @Param request body taskRequest true "Task details"
+// @Success 200 {object} response.SuccessEnvelope
+// @Failure 400 {object} response.ErrorEnvelope
+// @Failure 401 {object} response.ErrorEnvelope
+// @Failure 404 {object} response.ErrorEnvelope
+// @Failure 500 {object} response.ErrorEnvelope
+// @Router /customer/tasks/{id} [put]
 func (h *Handler) update(c *gin.Context) {
 	customerID, ok := currentCustomerID(c)
 	if !ok {
@@ -112,7 +159,7 @@ func (h *Handler) update(c *gin.Context) {
 	}
 	var req taskRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		apiresponse.Error(c, http.StatusBadRequest, "title is required and must be 1-255 characters")
+		response.Error(c, http.StatusBadRequest, "title is required and must be 1-255 characters")
 		return
 	}
 	model, err := h.service.Update(c.Request.Context(), customerID, id, UpdateInput{
@@ -123,9 +170,21 @@ func (h *Handler) update(c *gin.Context) {
 		h.writeServiceError(c, err)
 		return
 	}
-	apiresponse.JSON(c, http.StatusOK, response(model))
+	response.JSON(c, http.StatusOK, newTaskResponse(model))
 }
 
+// delete godoc
+// @Summary Delete a task
+// @Tags Customer tasks
+// @Produce json
+// @Security BearerAuth
+// @Param id path string true "Task ID" example(tsk_123)
+// @Success 200 {object} response.SuccessEnvelope
+// @Failure 400 {object} response.ErrorEnvelope
+// @Failure 401 {object} response.ErrorEnvelope
+// @Failure 404 {object} response.ErrorEnvelope
+// @Failure 500 {object} response.ErrorEnvelope
+// @Router /customer/tasks/{id} [delete]
 func (h *Handler) delete(c *gin.Context) {
 	customerID, ok := currentCustomerID(c)
 	if !ok {
@@ -139,14 +198,14 @@ func (h *Handler) delete(c *gin.Context) {
 		h.writeServiceError(c, err)
 		return
 	}
-	apiresponse.JSON(c, http.StatusOK, nil)
+	response.JSON(c, http.StatusOK, nil)
 }
 
 func currentCustomerID(c *gin.Context) (string, bool) {
 	value, exists := c.Get(auth.CustomerIDKey)
 	customerID, isString := value.(string)
 	if !exists || !isString || customerID == "" {
-		apiresponse.Error(c, http.StatusUnauthorized, "unauthorized")
+		response.Error(c, http.StatusUnauthorized, "unauthorized")
 		c.Abort()
 		return "", false
 	}
@@ -156,7 +215,7 @@ func currentCustomerID(c *gin.Context) (string, bool) {
 func parseID(c *gin.Context) (string, bool) {
 	id := c.Param("id")
 	if !strings.HasPrefix(id, "tsk_") || len(id) <= len("tsk_") {
-		apiresponse.Error(c, http.StatusBadRequest, "invalid task id")
+		response.Error(c, http.StatusBadRequest, "invalid task id")
 		return "", false
 	}
 	return id, true
@@ -164,17 +223,17 @@ func parseID(c *gin.Context) (string, bool) {
 
 func (h *Handler) writeServiceError(c *gin.Context, err error) {
 	if errors.Is(err, ErrNotFound) {
-		apiresponse.Error(c, http.StatusNotFound, "task not found")
+		response.Error(c, http.StatusNotFound, "task not found")
 		return
 	}
 	h.serverError(c, err)
 }
 
 func (h *Handler) serverError(c *gin.Context, _ error) {
-	apiresponse.Error(c, http.StatusInternalServerError, "internal server error")
+	response.Error(c, http.StatusInternalServerError, "internal server error")
 }
 
-func response(model Model) taskResponse {
+func newTaskResponse(model Model) taskResponse {
 	return taskResponse{
 		ID: model.ID, Title: model.Title, Description: model.Description,
 		Status: model.Status, Priority: model.Priority, DueDate: model.DueDate,

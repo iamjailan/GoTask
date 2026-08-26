@@ -1,7 +1,7 @@
 GO ?= go
 AIR_BIN ?= $(shell command -v air 2>/dev/null || printf '%s/bin/air' "$$($(GO) env GOPATH)")
 
-.PHONY: help setup migrate migrate-down migrate-version run dev start test vet build fmt
+.PHONY: help setup migrate migrate-down migrate-version run dev start test vet build fmt swagger
 
 help:
 	@echo "Available commands:"
@@ -15,6 +15,7 @@ help:
 	@echo "  make vet      Run go vet"
 	@echo "  make build    Build the API binary"
 	@echo "  make fmt      Format Go files"
+	@echo "  make swagger  Regenerate Swagger documentation"
 
 setup: migrate
 
@@ -51,3 +52,6 @@ build:
 
 fmt:
 	$(GO)fmt -w $$(find . -name '*.go' -not -path './vendor/*')
+
+swagger:
+	$(GO) run github.com/swaggo/swag/cmd/swag@v1.16.6 init --generalInfo cmd/api/main.go --parseInternal --output docs
