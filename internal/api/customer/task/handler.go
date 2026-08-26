@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gotask/internal/auth"
-	apiresponse "gotask/internal/response"
+	"gotask/internal/api/customer/auth"
+	apiresponse "gotask/internal/utils/response"
 )
 
 type Handler struct{ service Service }

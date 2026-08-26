@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"gorm.io/gorm"
-	"gotask/internal/auth/models"
+	"gotask/internal/api/customer/auth/models"
 	metypes "gotask/internal/types/me"
 )
 

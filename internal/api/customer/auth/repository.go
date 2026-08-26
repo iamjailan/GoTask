@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"gotask/internal/auth/models"
+	"gotask/internal/api/customer/auth/models"
 )
 
 var ErrNotFound = errors.New("customer not found")

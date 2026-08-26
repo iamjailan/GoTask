@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
-	"gotask/internal/auth/models"
-	"gotask/internal/auth/utils"
+	"gotask/internal/api/customer/auth/models"
+	"gotask/internal/api/customer/auth/utils"
 	gotaskemail "gotask/internal/email"
 	metypes "gotask/internal/types/me"
 )

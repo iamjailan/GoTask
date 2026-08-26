@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 
-	"gotask/internal/auth"
+	"gotask/internal/api/customer/auth"
+	"gotask/internal/api/customer/me"
+	"gotask/internal/api/customer/task"
 	"gotask/internal/config"
 	"gotask/internal/database"
 	gotaskemail "gotask/internal/email"
-	"gotask/internal/me"
-	apiresponse "gotask/internal/response"
-	"gotask/internal/task"
+	apiresponse "gotask/internal/utils/response"
 
 	"github.com/gin-gonic/gin"
 )

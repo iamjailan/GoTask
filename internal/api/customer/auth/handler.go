@@ -6,11 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"gotask/internal/auth/models"
-	"gotask/internal/auth/utils"
-	apiresponse "gotask/internal/response"
+	"gotask/internal/api/customer/auth/models"
+	"gotask/internal/api/customer/auth/utils"
 	authtypes "gotask/internal/types/auth"
+	apiresponse "gotask/internal/utils/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct{ service Service }

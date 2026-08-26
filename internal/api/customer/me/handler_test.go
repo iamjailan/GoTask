@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"gotask/internal/auth/models"
+	"gotask/internal/api/customer/auth/models"
 	metypes "gotask/internal/types/me"
 )
 

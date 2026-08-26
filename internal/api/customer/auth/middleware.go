@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	apiresponse "gotask/internal/response"
+	apiresponse "gotask/internal/utils/response"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"

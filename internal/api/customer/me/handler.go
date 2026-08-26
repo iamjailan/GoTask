@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gotask/internal/auth"
-	"gotask/internal/auth/models"
-	apiresponse "gotask/internal/response"
+	"gotask/internal/api/customer/auth"
+	"gotask/internal/api/customer/auth/models"
 	metypes "gotask/internal/types/me"
+	apiresponse "gotask/internal/utils/response"
 )
 
 type Handler struct{ service Service }
