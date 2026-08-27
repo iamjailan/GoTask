@@ -1,11 +1,12 @@
 GO ?= go
 AIR_BIN ?= $(shell command -v air 2>/dev/null || printf '%s/bin/air' "$$($(GO) env GOPATH)")
 
-.PHONY: help setup migrate migrate-down migrate-reset migrate-version run dev start test vet build fmt swagger
+.PHONY: help setup migration migrate migrate-down migrate-reset migrate-version run dev start test vet build fmt swagger
 
 help:
 	@echo "Available commands:"
 	@echo "  make setup    Run migrations against local PostgreSQL"
+	@echo "  make migration  Interactively create a date-prefixed migration pair"
 	@echo "  make migrate  Run database migrations"
 	@echo "  make migrate-down  Roll back the most recent database migration"
 	@echo "  make migrate-reset  Clear all public tables and migration records"
@@ -19,6 +20,9 @@ help:
 	@echo "  make swagger  Regenerate Swagger documentation"
 
 setup: migrate
+
+migration:
+	$(GO) run ./cmd/migration
 
 migrate:
 	$(GO) run -mod=readonly ./cmd/migrate
