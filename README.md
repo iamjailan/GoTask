@@ -12,7 +12,7 @@ make setup
 make run
 ```
 
-Schema changes are tracked as ordered SQL files in `migrations/`. Apply pending migrations with `make migrate`; `make migrate-down` rolls back one migration, and `make migrate-version` shows the recorded version. Create a new numbered `*.up.sql` and matching `*.down.sql` file for every schema change. The API does not change the schema during startup.
+Schema changes are tracked as ordered SQL files in `migrations/`. Apply pending migrations with `make migrate`; `make migrate-down` rolls back one migration, and `make migrate-version` shows the recorded version. Use `make migrate-reset` to drop and recreate PostgreSQL's `public` schema. This deletes all tables, data, indexes, sequences, and migration records in that schema; run `make migrate` afterward to rebuild it from the migration files. Each `make migrate` run creates or updates the `migration_history` table, which records `version`, `name`, `created_at`, `applied_at`, and `is_applied` for every migration file. Create a new numbered `*.up.sql` and matching `*.down.sql` file for every schema change. The API does not change the schema during startup.
 
 `make run` uses [Air](https://github.com/air-verse/air) for hot reload: changes to Go files automatically rebuild and restart the API. Install it once if needed:
 

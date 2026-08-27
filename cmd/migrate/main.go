@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	direction := flag.String("direction", "up", "migration direction: up, down, or version")
+	direction := flag.String("direction", "up", "migration direction: up, down, reset, or version")
 	flag.Parse()
 
 	cfg := config.Load()
@@ -24,6 +24,11 @@ func main() {
 			log.Fatalf("rollback migration: %v", err)
 		}
 		log.Println("database migration rolled back")
+	case "reset":
+		if err := database.Reset(cfg.DatabaseURL); err != nil {
+			log.Fatalf("reset database migrations: %v", err)
+		}
+		log.Println("database schema cleared")
 	case "version":
 		version, dirty, err := database.Version(cfg.DatabaseURL, cfg.MigrationsPath)
 		if err != nil {
@@ -31,6 +36,6 @@ func main() {
 		}
 		log.Printf("migration version: %d, dirty: %t", version, dirty)
 	default:
-		log.Fatalf("invalid migration direction %q; use up, down, or version", *direction)
+		log.Fatalf("invalid migration direction %q; use up, down, reset, or version", *direction)
 	}
 }
