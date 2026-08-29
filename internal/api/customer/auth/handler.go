@@ -16,57 +16,6 @@ import (
 
 type Handler struct{ service Service }
 
-type registerRequest struct {
-	FirstName string `json:"first_name" binding:"required,max=100"`
-	LastName  string `json:"last_name" binding:"required,max=100"`
-	Email     string `json:"email" binding:"required,email,max=255"`
-	Password  string `json:"password" binding:"required,min=8,max=72"`
-	Phone     string `json:"phone" binding:"omitempty,max=30"`
-	AvatarURL string `json:"avatar_url" binding:"omitempty,url"`
-}
-
-type loginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
-type confirmEmailRequest struct {
-	Email string `json:"email" binding:"required,email"`
-	Code  string `json:"code" binding:"required,len=6,numeric"`
-}
-
-type verificationResponse struct {
-	Message   string           `json:"message"`
-	Customer  customerResponse `json:"customer"`
-	Token     string           `json:"token"`
-	ExpiresAt time.Time        `json:"expires_at"`
-}
-
-type registrationResponse struct {
-	Email                string `json:"email"`
-	VerificationRequired bool   `json:"verification_required"`
-	Message              string `json:"message"`
-}
-
-type authResponse struct {
-	Token     string           `json:"token"`
-	ExpiresAt time.Time        `json:"expires_at"`
-	Customer  customerResponse `json:"customer"`
-}
-
-type customerResponse struct {
-	ID        string    `json:"id"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone,omitempty"`
-	AvatarURL string    `json:"avatar_url,omitempty"`
-	Role      string    `json:"role"`
-	IsActive  bool      `json:"is_active"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
-
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
 func (h *Handler) RegisterRoutes(router *gin.Engine, emailRateLimit gin.HandlerFunc) {
@@ -82,7 +31,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, emailRateLimit gin.HandlerF
 // @Tags Customer authentication
 // @Accept json
 // @Produce json
-// @Param request body registerRequest true "Registration details"
+// @Param request body authtypes.RegisterRequest true "Registration details"
 // @Success 202 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 409 {object} response.ErrorEnvelope
@@ -90,7 +39,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, emailRateLimit gin.HandlerF
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/auth/register [post]
 func (h *Handler) register(c *gin.Context) {
-	var req registerRequest
+	var req authtypes.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "first_name, last_name, a valid email, and a password of 8-72 characters are required")
 		return
@@ -103,7 +52,7 @@ func (h *Handler) register(c *gin.Context) {
 		h.writeError(c, err)
 		return
 	}
-	response.JSON(c, http.StatusAccepted, registrationResponse{
+	response.JSON(c, http.StatusAccepted, authtypes.RegistrationResponse{
 		Email: model.Email, VerificationRequired: true,
 		Message: "verification code sent to your email; confirm it before logging in",
 	})
@@ -115,14 +64,14 @@ func (h *Handler) register(c *gin.Context) {
 // @Tags Customer authentication
 // @Accept json
 // @Produce json
-// @Param request body confirmEmailRequest true "Email verification details"
+// @Param request body authtypes.ConfirmEmailRequest true "Email verification details"
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/auth/confirm-email [post]
 func (h *Handler) confirmEmail(c *gin.Context) {
-	var req confirmEmailRequest
+	var req authtypes.ConfirmEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "a valid email and 6-digit verification code are required")
 		return
@@ -132,7 +81,7 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 		h.writeError(c, err)
 		return
 	}
-	response.JSON(c, http.StatusOK, verificationResponse{
+	response.JSON(c, http.StatusOK, authtypes.VerificationResponse{
 		Message: "email verified successfully", Customer: newCustomerResponse(model),
 		Token: token, ExpiresAt: time.Now().UTC().Add(utils.TokenLifetime),
 	})
@@ -144,7 +93,7 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 // @Tags Customer authentication
 // @Accept json
 // @Produce json
-// @Param request body loginRequest true "Customer credentials"
+// @Param request body authtypes.LoginRequest true "Customer credentials"
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
@@ -152,7 +101,7 @@ func (h *Handler) confirmEmail(c *gin.Context) {
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/auth/login [post]
 func (h *Handler) login(c *gin.Context) {
-	var req loginRequest
+	var req authtypes.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "valid email and password are required")
 		return
@@ -178,16 +127,16 @@ func (h *Handler) writeError(c *gin.Context, err error) {
 	}
 }
 
-func newAuthResponse(model models.Model, token string) authResponse {
-	return authResponse{Token: token, ExpiresAt: time.Now().UTC().Add(utils.TokenLifetime), Customer: customerResponse{
+func newAuthResponse(model models.Model, token string) authtypes.AuthResponse {
+	return authtypes.AuthResponse{Token: token, ExpiresAt: time.Now().UTC().Add(utils.TokenLifetime), Customer: authtypes.CustomerResponse{
 		ID: model.ID, FirstName: model.FirstName, LastName: model.LastName, Email: model.Email,
 		Phone: model.Phone, AvatarURL: model.AvatarURL, Role: model.Role, IsActive: model.IsActive,
 		CreatedAt: model.CreatedAt, UpdatedAt: model.UpdatedAt,
 	}}
 }
 
-func newCustomerResponse(model models.Model) customerResponse {
-	return customerResponse{ID: model.ID, FirstName: model.FirstName, LastName: model.LastName,
+func newCustomerResponse(model models.Model) authtypes.CustomerResponse {
+	return authtypes.CustomerResponse{ID: model.ID, FirstName: model.FirstName, LastName: model.LastName,
 		Email: model.Email, Phone: model.Phone, AvatarURL: model.AvatarURL, Role: model.Role,
 		IsActive: model.IsActive, CreatedAt: model.CreatedAt, UpdatedAt: model.UpdatedAt}
 }
