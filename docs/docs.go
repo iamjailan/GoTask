@@ -35,7 +35,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.confirmEmailRequest"
+                            "$ref": "#/definitions/auth.ConfirmEmailRequest"
                         }
                     }
                 ],
@@ -87,7 +87,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.loginRequest"
+                            "$ref": "#/definitions/auth.LoginRequest"
                         }
                     }
                 ],
@@ -145,7 +145,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.registerRequest"
+                            "$ref": "#/definitions/auth.RegisterRequest"
                         }
                     }
                 ],
@@ -247,7 +247,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/me.profileUpdateRequestDoc"
+                            "$ref": "#/definitions/me.ProfileUpdateRequestDoc"
                         }
                     }
                 ],
@@ -355,7 +355,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/me.changeEmailRequestDoc"
+                            "$ref": "#/definitions/me.ChangeEmailRequestDoc"
                         }
                     }
                 ],
@@ -429,7 +429,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/me.changePasswordRequestDoc"
+                            "$ref": "#/definitions/me.ChangePasswordRequestDoc"
                         }
                     }
                 ],
@@ -525,7 +525,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/task.taskRequest"
+                            "$ref": "#/definitions/task.Request"
                         }
                     }
                 ],
@@ -657,7 +657,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/task.taskRequest"
+                            "$ref": "#/definitions/task.Request"
                         }
                     }
                 ],
@@ -791,7 +791,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "auth.confirmEmailRequest": {
+        "auth.ConfirmEmailRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -806,7 +806,7 @@ const docTemplate = `{
                 }
             }
         },
-        "auth.loginRequest": {
+        "auth.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -821,7 +821,7 @@ const docTemplate = `{
                 }
             }
         },
-        "auth.registerRequest": {
+        "auth.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -856,7 +856,7 @@ const docTemplate = `{
                 }
             }
         },
-        "me.changeEmailRequestDoc": {
+        "me.ChangeEmailRequestDoc": {
             "type": "object",
             "properties": {
                 "current_password": {
@@ -869,7 +869,7 @@ const docTemplate = `{
                 }
             }
         },
-        "me.changePasswordRequestDoc": {
+        "me.ChangePasswordRequestDoc": {
             "type": "object",
             "properties": {
                 "current_password": {
@@ -882,7 +882,7 @@ const docTemplate = `{
                 }
             }
         },
-        "me.profileUpdateRequestDoc": {
+        "me.ProfileUpdateRequestDoc": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -934,7 +934,7 @@ const docTemplate = `{
                 }
             }
         },
-        "task.taskRequest": {
+        "task.Request": {
             "type": "object",
             "required": [
                 "title"

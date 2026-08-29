@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  auth.confirmEmailRequest:
+  auth.ConfirmEmailRequest:
     properties:
       code:
         type: string
@@ -10,7 +10,7 @@ definitions:
     - code
     - email
     type: object
-  auth.loginRequest:
+  auth.LoginRequest:
     properties:
       email:
         type: string
@@ -20,7 +20,7 @@ definitions:
     - email
     - password
     type: object
-  auth.registerRequest:
+  auth.RegisterRequest:
     properties:
       avatar_url:
         type: string
@@ -46,7 +46,7 @@ definitions:
     - last_name
     - password
     type: object
-  me.changeEmailRequestDoc:
+  me.ChangeEmailRequestDoc:
     properties:
       current_password:
         example: current-password
@@ -55,7 +55,7 @@ definitions:
         example: new@example.com
         type: string
     type: object
-  me.changePasswordRequestDoc:
+  me.ChangePasswordRequestDoc:
     properties:
       current_password:
         example: current-password
@@ -64,7 +64,7 @@ definitions:
         example: new-password
         type: string
     type: object
-  me.profileUpdateRequestDoc:
+  me.ProfileUpdateRequestDoc:
     properties:
       avatar_url:
         example: https://example.com/avatar.png
@@ -100,7 +100,7 @@ definitions:
         example: true
         type: boolean
     type: object
-  task.taskRequest:
+  task.Request:
     properties:
       completed:
         type: boolean
@@ -147,7 +147,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/auth.confirmEmailRequest'
+          $ref: '#/definitions/auth.ConfirmEmailRequest'
       produces:
       - application/json
       responses:
@@ -181,7 +181,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/auth.loginRequest'
+          $ref: '#/definitions/auth.LoginRequest'
       produces:
       - application/json
       responses:
@@ -220,7 +220,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/auth.registerRequest'
+          $ref: '#/definitions/auth.RegisterRequest'
       produces:
       - application/json
       responses:
@@ -307,7 +307,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/me.profileUpdateRequestDoc'
+          $ref: '#/definitions/me.ProfileUpdateRequestDoc'
       produces:
       - application/json
       responses:
@@ -350,7 +350,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/me.changeEmailRequestDoc'
+          $ref: '#/definitions/me.ChangeEmailRequestDoc'
       produces:
       - application/json
       responses:
@@ -397,7 +397,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/me.changePasswordRequestDoc'
+          $ref: '#/definitions/me.ChangePasswordRequestDoc'
       produces:
       - application/json
       responses:
@@ -457,7 +457,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/task.taskRequest'
+          $ref: '#/definitions/task.Request'
       produces:
       - application/json
       responses:
@@ -582,7 +582,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/task.taskRequest'
+          $ref: '#/definitions/task.Request'
       produces:
       - application/json
       responses:

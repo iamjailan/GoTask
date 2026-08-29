@@ -4,36 +4,14 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"gotask/internal/api/customer/auth"
+	"gotask/internal/types/task"
 	response "gotask/internal/utils/response"
 )
 
 type Handler struct{ service Service }
-
-type taskRequest struct {
-	Title       string     `json:"title" binding:"required,min=1,max=255"`
-	Description string     `json:"description" binding:"omitempty,max=5000"`
-	Status      string     `json:"status" binding:"omitempty,oneof=pending in_progress completed archived"`
-	Priority    string     `json:"priority" binding:"omitempty,oneof=low medium high urgent"`
-	DueDate     *time.Time `json:"due_date"`
-	Completed   bool       `json:"completed"`
-}
-
-type taskResponse struct {
-	ID          string     `json:"id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	Status      string     `json:"status"`
-	Priority    string     `json:"priority"`
-	DueDate     *time.Time `json:"due_date,omitempty"`
-	Completed   bool       `json:"completed"`
-	CompletedAt *time.Time `json:"completed_at,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-}
 
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
@@ -52,7 +30,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, middleware gin.HandlerFunc)
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body taskRequest true "Task details"
+// @Param request body task.Request true "Task details"
 // @Success 201 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
@@ -64,7 +42,7 @@ func (h *Handler) create(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req taskRequest
+	var req task.Request
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "title is required and must be 1-255 characters")
 		return
@@ -100,7 +78,7 @@ func (h *Handler) list(c *gin.Context) {
 		h.serverError(c, err)
 		return
 	}
-	responses := make([]taskResponse, 0, len(models))
+	responses := make([]task.Response, 0, len(models))
 	for _, model := range models {
 		responses = append(responses, newTaskResponse(model))
 	}
@@ -144,7 +122,7 @@ func (h *Handler) get(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path string true "Task ID" example(tsk_123)
-// @Param request body taskRequest true "Task details"
+// @Param request body task.Request true "Task details"
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
@@ -161,7 +139,7 @@ func (h *Handler) update(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req taskRequest
+	var req task.Request
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "title is required and must be 1-255 characters")
 		return
@@ -238,8 +216,8 @@ func (h *Handler) serverError(c *gin.Context, _ error) {
 	response.Error(c, http.StatusInternalServerError, "internal server error")
 }
 
-func newTaskResponse(model Model) taskResponse {
-	return taskResponse{
+func newTaskResponse(model Model) task.Response {
+	return task.Response{
 		ID: model.ID, Title: model.Title, Description: model.Description,
 		Status: model.Status, Priority: model.Priority, DueDate: model.DueDate,
 		Completed: model.Completed, CompletedAt: model.CompletedAt,

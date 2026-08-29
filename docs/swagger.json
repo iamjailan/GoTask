@@ -32,7 +32,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.confirmEmailRequest"
+                            "$ref": "#/definitions/auth.ConfirmEmailRequest"
                         }
                     }
                 ],
@@ -84,7 +84,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.loginRequest"
+                            "$ref": "#/definitions/auth.LoginRequest"
                         }
                     }
                 ],
@@ -142,7 +142,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.registerRequest"
+                            "$ref": "#/definitions/auth.RegisterRequest"
                         }
                     }
                 ],
@@ -244,7 +244,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/me.profileUpdateRequestDoc"
+                            "$ref": "#/definitions/me.ProfileUpdateRequestDoc"
                         }
                     }
                 ],
@@ -352,7 +352,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/me.changeEmailRequestDoc"
+                            "$ref": "#/definitions/me.ChangeEmailRequestDoc"
                         }
                     }
                 ],
@@ -426,7 +426,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/me.changePasswordRequestDoc"
+                            "$ref": "#/definitions/me.ChangePasswordRequestDoc"
                         }
                     }
                 ],
@@ -522,7 +522,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/task.taskRequest"
+                            "$ref": "#/definitions/task.Request"
                         }
                     }
                 ],
@@ -654,7 +654,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/task.taskRequest"
+                            "$ref": "#/definitions/task.Request"
                         }
                     }
                 ],
@@ -788,7 +788,7 @@
         }
     },
     "definitions": {
-        "auth.confirmEmailRequest": {
+        "auth.ConfirmEmailRequest": {
             "type": "object",
             "required": [
                 "code",
@@ -803,7 +803,7 @@
                 }
             }
         },
-        "auth.loginRequest": {
+        "auth.LoginRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -818,7 +818,7 @@
                 }
             }
         },
-        "auth.registerRequest": {
+        "auth.RegisterRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -853,7 +853,7 @@
                 }
             }
         },
-        "me.changeEmailRequestDoc": {
+        "me.ChangeEmailRequestDoc": {
             "type": "object",
             "properties": {
                 "current_password": {
@@ -866,7 +866,7 @@
                 }
             }
         },
-        "me.changePasswordRequestDoc": {
+        "me.ChangePasswordRequestDoc": {
             "type": "object",
             "properties": {
                 "current_password": {
@@ -879,7 +879,7 @@
                 }
             }
         },
-        "me.profileUpdateRequestDoc": {
+        "me.ProfileUpdateRequestDoc": {
             "type": "object",
             "properties": {
                 "avatar_url": {
@@ -931,7 +931,7 @@
                 }
             }
         },
-        "task.taskRequest": {
+        "task.Request": {
             "type": "object",
             "required": [
                 "title"

@@ -19,3 +19,13 @@ type ChangePasswordInput struct {
 	CurrentPassword string
 	NewPassword     string
 }
+
+type ChangeEmailRequestDoc struct {
+	Email           string `json:"email" example:"new@example.com"`
+	CurrentPassword string `json:"current_password" example:"current-password"`
+}
+
+type ChangePasswordRequestDoc struct {
+	CurrentPassword string `json:"current_password" example:"current-password"`
+	NewPassword     string `json:"new_password" example:"new-password"`
+}

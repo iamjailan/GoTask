@@ -30,3 +30,10 @@ type UserResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+type ProfileUpdateRequestDoc struct {
+	FirstName string `json:"first_name" example:"Ada"`
+	LastName  string `json:"last_name" example:"Lovelace"`
+	Phone     string `json:"phone" example:"+12025550123"`
+	AvatarURL string `json:"avatar_url" example:"https://example.com/avatar.png"`
+}

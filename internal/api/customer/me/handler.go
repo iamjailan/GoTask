@@ -8,31 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"gotask/internal/api/customer/auth"
 	"gotask/internal/api/customer/auth/models"
-	metypes "gotask/internal/types/me"
+	"gotask/internal/types/me"
 	response "gotask/internal/utils/response"
 )
 
 type Handler struct{ service Service }
-
-// profileUpdateRequestDoc documents the accepted customer profile fields.
-type profileUpdateRequestDoc struct {
-	FirstName string `json:"first_name" example:"Ada"`
-	LastName  string `json:"last_name" example:"Lovelace"`
-	Phone     string `json:"phone" example:"+12025550123"`
-	AvatarURL string `json:"avatar_url" example:"https://example.com/avatar.png"`
-}
-
-// changeEmailRequestDoc documents the email change request body.
-type changeEmailRequestDoc struct {
-	Email           string `json:"email" example:"new@example.com"`
-	CurrentPassword string `json:"current_password" example:"current-password"`
-}
-
-// changePasswordRequestDoc documents the password change request body.
-type changePasswordRequestDoc struct {
-	CurrentPassword string `json:"current_password" example:"current-password"`
-	NewPassword     string `json:"new_password" example:"new-password"`
-}
 
 func NewHandler(service Service) *Handler { return &Handler{service: service} }
 
@@ -84,7 +64,7 @@ func (h *Handler) get(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body profileUpdateRequestDoc true "Profile details"
+// @Param request body me.ProfileUpdateRequestDoc true "Profile details"
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
@@ -97,7 +77,7 @@ func (h *Handler) update(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req metypes.ProfileUpdateRequest
+	var req me.ProfileUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "invalid user profile")
 		return
@@ -106,7 +86,7 @@ func (h *Handler) update(c *gin.Context) {
 		response.Error(c, http.StatusBadRequest, "use the dedicated /customer/me/email or /customer/me/password endpoint for credential changes")
 		return
 	}
-	model, err := h.service.UpdateProfile(c.Request.Context(), id, metypes.ProfileUpdateInput{
+	model, err := h.service.UpdateProfile(c.Request.Context(), id, me.ProfileUpdateInput{
 		FirstName: req.FirstName, LastName: req.LastName,
 		Phone: req.Phone, AvatarURL: req.AvatarURL,
 	})
@@ -123,7 +103,7 @@ func (h *Handler) update(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body changeEmailRequestDoc true "New email and current password"
+// @Param request body me.ChangeEmailRequestDoc true "New email and current password"
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
@@ -137,12 +117,12 @@ func (h *Handler) changeEmail(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req metypes.ChangeEmailRequest
+	var req me.ChangeEmailRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "a valid email and current password are required")
 		return
 	}
-	model, err := h.service.ChangeEmail(c.Request.Context(), id, metypes.ChangeEmailInput{
+	model, err := h.service.ChangeEmail(c.Request.Context(), id, me.ChangeEmailInput{
 		Email: req.Email, CurrentPassword: req.CurrentPassword,
 	})
 	if err != nil {
@@ -158,7 +138,7 @@ func (h *Handler) changeEmail(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param request body changePasswordRequestDoc true "Current and new password"
+// @Param request body me.ChangePasswordRequestDoc true "Current and new password"
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
@@ -169,12 +149,12 @@ func (h *Handler) changePassword(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req metypes.ChangePasswordRequest
+	var req me.ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, http.StatusBadRequest, "current_password and a new_password of 8-72 characters are required")
 		return
 	}
-	if err := h.service.ChangePassword(c.Request.Context(), id, metypes.ChangePasswordInput{
+	if err := h.service.ChangePassword(c.Request.Context(), id, me.ChangePasswordInput{
 		CurrentPassword: req.CurrentPassword, NewPassword: req.NewPassword,
 	}); err != nil {
 		h.writeError(c, err)
@@ -226,8 +206,8 @@ func (h *Handler) writeError(c *gin.Context, err error) {
 	}
 }
 
-func newResponse(model models.Model) metypes.UserResponse {
-	return metypes.UserResponse{ID: model.ID, FirstName: model.FirstName, LastName: model.LastName,
+func newResponse(model models.Model) me.UserResponse {
+	return me.UserResponse{ID: model.ID, FirstName: model.FirstName, LastName: model.LastName,
 		Email: model.Email, Phone: model.Phone, AvatarURL: model.AvatarURL, Role: model.Role,
 		IsActive: model.IsActive, CreatedAt: model.CreatedAt, UpdatedAt: model.UpdatedAt}
 }
