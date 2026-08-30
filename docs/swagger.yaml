@@ -79,16 +79,14 @@ definitions:
         example: "+12025550123"
         type: string
     type: object
-  response.ErrorData:
-    properties:
-      error:
-        example: unauthorized
-        type: string
-    type: object
   response.ErrorEnvelope:
     properties:
-      data:
-        $ref: '#/definitions/response.ErrorData'
+      error:
+        example: title is required
+        type: string
+      statusCode:
+        example: 400
+        type: integer
       success:
         example: false
         type: boolean
@@ -98,18 +96,6 @@ definitions:
       data: {}
       success:
         example: true
-        type: boolean
-    type: object
-  response.UnauthorizedEnvelope:
-    properties:
-      error:
-        example: unauthorized
-        type: string
-      statusCode:
-        example: 401
-        type: integer
-      success:
-        example: false
         type: boolean
     type: object
   task.Request:
@@ -641,7 +627,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/response.UnauthorizedEnvelope'
+            $ref: '#/definitions/response.ErrorEnvelope'
         "429":
           description: Too Many Requests
           schema:

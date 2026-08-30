@@ -588,7 +588,7 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.UnauthorizedEnvelope"
+                            "$ref": "#/definitions/response.ErrorEnvelope"
                         }
                     },
                     "429": {
@@ -946,20 +946,16 @@ const docTemplate = `{
                 }
             }
         },
-        "response.ErrorData": {
+        "response.ErrorEnvelope": {
             "type": "object",
             "properties": {
                 "error": {
                     "type": "string",
-                    "example": "unauthorized"
-                }
-            }
-        },
-        "response.ErrorEnvelope": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "$ref": "#/definitions/response.ErrorData"
+                    "example": "title is required"
+                },
+                "statusCode": {
+                    "type": "integer",
+                    "example": 400
                 },
                 "success": {
                     "type": "boolean",
@@ -974,23 +970,6 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": true
-                }
-            }
-        },
-        "response.UnauthorizedEnvelope": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string",
-                    "example": "unauthorized"
-                },
-                "statusCode": {
-                    "type": "integer",
-                    "example": 401
-                },
-                "success": {
-                    "type": "boolean",
-                    "example": false
                 }
             }
         },

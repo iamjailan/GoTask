@@ -25,7 +25,7 @@ func (h *StatisticsHandler) RegisterRoutes(router *gin.Engine, middleware gin.Ha
 // @Produce json
 // @Security BearerAuth
 // @Success 200 {object} response.SuccessEnvelope
-// @Failure 401 {object} response.UnauthorizedEnvelope
+// @Failure 401 {object} response.ErrorEnvelope
 // @Failure 429 {object} response.ErrorEnvelope
 // @Failure 500 {object} response.ErrorEnvelope
 // @Router /customer/tasks/statistics [get]
