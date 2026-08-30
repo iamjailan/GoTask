@@ -1,0 +1,4 @@
+# Keep real environment values out of Cursor indexing and AI context.
+.env
+.env.*
+!.env.example
