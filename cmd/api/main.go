@@ -7,6 +7,7 @@ import (
 	"gotask/internal/api/customer/me"
 	"gotask/internal/api/customer/task"
 	"gotask/internal/config"
+	"gotask/internal/cors"
 	"gotask/internal/database"
 	gotaskemail "gotask/internal/email"
 	"gotask/internal/ratelimit"
@@ -44,11 +45,23 @@ func main() {
 	protectedMiddleware := auth.JWTMiddlewareWithUserStore(cfg.JWTSecret, authRepository)
 	apiRateLimit := ratelimit.New(10, time.Minute).Middleware()
 	emailRateLimit := ratelimit.New(3, time.Minute).Middleware()
+	corsMiddleware, err := cors.New(cors.Config{
+		AllowedOrigins:   cfg.CORSAllowedOrigins,
+		AllowedMethods:   cfg.CORSAllowedMethods,
+		AllowedHeaders:   cfg.CORSAllowedHeaders,
+		ExposedHeaders:   cfg.CORSExposedHeaders,
+		AllowCredentials: cfg.CORSAllowCredentials,
+		MaxAge:           cfg.CORSMaxAge,
+	})
+	if err != nil {
+		log.Fatalf("configure CORS: %v", err)
+	}
 
 	router := gin.Default()
 	if err := router.SetTrustedProxies(nil); err != nil {
 		log.Fatalf("configure trusted proxies: %v", err)
 	}
+	router.Use(corsMiddleware)
 	registerSwaggerRoutes(router, cfg.SwaggerUsername, cfg.SwaggerPassword)
 	router.Use(apiRateLimit)
 	router.GET("/health", health)

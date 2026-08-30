@@ -80,3 +80,16 @@ Run `make swagger` after changing API annotations to regenerate the checked-in `
 Customer API requests are limited to 10 requests per minute per client IP. Email-sending endpoints (`POST /customer/auth/register` and `PUT /customer/me/email`) are limited to 3 requests per minute per client IP. Exceeding a limit returns `429 Too Many Requests` with a `Retry-After` header.
 
 Set `JWT_SECRET` in `.env` to a long random value before running outside local development.
+
+## CORS
+
+CORS is configured through environment variables. Set `CORS_ALLOWED_ORIGINS` to a comma-separated list of the browser application origins that may call the API. Do not use `*` with `CORS_ALLOW_CREDENTIALS=true`.
+
+```dotenv
+CORS_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com
+CORS_ALLOWED_METHODS=GET,POST,PUT,PATCH,DELETE,OPTIONS
+CORS_ALLOWED_HEADERS=Authorization,Content-Type
+CORS_EXPOSED_HEADERS=
+CORS_ALLOW_CREDENTIALS=false
+CORS_MAX_AGE=12h
+```
