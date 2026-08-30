@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 
 	"gotask/internal/api/customer/auth"
 	"gotask/internal/api/customer/me"
@@ -65,6 +66,7 @@ func main() {
 	router.Use(corsMiddleware)
 	registerSwaggerRoutes(router, cfg.SwaggerUsername, cfg.SwaggerPassword)
 	router.Use(apiRateLimit)
+	router.NoRoute(protectedMiddleware, notFound)
 	router.GET("/health", health)
 	statisticsHandler.RegisterRoutes(router, protectedMiddleware)
 	taskHandler.RegisterRoutes(router, protectedMiddleware)
@@ -87,4 +89,8 @@ func main() {
 // @Router /health [get]
 func health(c *gin.Context) {
 	response.JSON(c, 200, gin.H{"status": "ok"})
+}
+
+func notFound(c *gin.Context) {
+	response.Error(c, http.StatusNotFound, "route not found")
 }
