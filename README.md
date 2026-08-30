@@ -26,6 +26,22 @@ The API listens on `http://localhost:8080`.
 
 Run `make help` to see all available commands.
 
+## Run with Docker and local PostgreSQL (Linux)
+
+Docker runs only the API; PostgreSQL remains external to Compose. On Linux, the API container uses the host network so PostgreSQL can remain bound to `localhost`. Set `DATABASE_URL` in `.env` with your local PostgreSQL credentials:
+
+```dotenv
+DATABASE_URL=postgres://postgres:your-password@localhost:5432/gotask?sslmode=disable
+```
+
+Then start the API:
+
+```bash
+make docker-up
+```
+
+The container applies pending SQL migrations before starting the API. If migrations fail (for example, because PostgreSQL is unavailable), the API container exits instead of serving with an outdated schema. The API is available at `http://localhost:8080`. This local-PostgreSQL setup uses Linux host networking; for an off-host database, set `DATABASE_URL` to its normal reachable URL instead.
+
 ## Endpoints
 
 - `GET /health`

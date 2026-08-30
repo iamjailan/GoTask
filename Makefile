@@ -1,7 +1,7 @@
 GO ?= go
 AIR_BIN ?= $(shell command -v air 2>/dev/null || printf '%s/bin/air' "$$($(GO) env GOPATH)")
 
-.PHONY: help setup migration migrate migrate-down migrate-reset migrate-version run dev start test vet build fmt swagger
+.PHONY: help setup migration migrate migrate-down migrate-reset migrate-version run dev start docker-up docker-down docker-logs test vet build fmt swagger
 
 help:
 	@echo "Available commands:"
@@ -13,6 +13,9 @@ help:
 	@echo "  make migrate-version  Show the current database migration version"
 	@echo "  make run      Run the API server with hot reload"
 	@echo "  make start    Run the API server once without hot reload"
+	@echo "  make docker-up    Build and start the API container (runs migrations first)"
+	@echo "  make docker-down  Stop the API container"
+	@echo "  make docker-logs  Follow API container logs"
 	@echo "  make test     Run tests"
 	@echo "  make vet      Run go vet"
 	@echo "  make build    Build the API binary"
@@ -48,6 +51,15 @@ dev:
 
 start:
 	$(GO) run ./cmd/api
+
+docker-up:
+	docker compose up --build
+
+docker-down:
+	docker compose down
+
+docker-logs:
+	docker compose logs --follow api
 
 test:
 	$(GO) test ./...
