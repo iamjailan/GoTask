@@ -14,7 +14,7 @@ type Repository interface {
 	Create(context.Context, *Model) error
 	List(context.Context, string) ([]Model, error)
 	Get(context.Context, string, string) (Model, error)
-	Update(context.Context, string, string, *Model) (UpdateResult, error)
+	Update(context.Context, string, string, UpdateInput) (UpdateResult, error)
 	Delete(context.Context, string, string) error
 	Transaction(context.Context, func(Repository, StatisticsRepository) error) error
 }
@@ -50,32 +50,40 @@ func (r *repository) Get(ctx context.Context, customerID, id string) (Model, err
 	return model, nil
 }
 
-func (r *repository) Update(ctx context.Context, customerID, id string, input *Model) (UpdateResult, error) {
+func (r *repository) Update(ctx context.Context, customerID, id string, input UpdateInput) (UpdateResult, error) {
 	model, err := r.Get(ctx, customerID, id)
 	if err != nil {
 		return UpdateResult{}, err
 	}
 	previous := model
-	model.Title = input.Title
-	model.Description = input.Description
-	if input.Status != "" {
-		model.Status = input.Status
+	if input.Title != nil {
+		model.Title = *input.Title
 	}
-	if input.Priority != "" {
-		model.Priority = input.Priority
+	if input.Description != nil {
+		model.Description = *input.Description
 	}
-	model.DueDate = input.DueDate
-	model.Completed = input.Completed
-	if input.Completed {
-		if model.CompletedAt == nil {
-			now := time.Now().UTC()
-			model.CompletedAt = &now
-		}
-		model.Status = "completed"
-	} else {
-		model.CompletedAt = nil
-		if model.Status == "completed" {
-			model.Status = "pending"
+	if input.Status != nil {
+		model.Status = *input.Status
+	}
+	if input.Priority != nil {
+		model.Priority = *input.Priority
+	}
+	if input.DueDateSet {
+		model.DueDate = input.DueDate
+	}
+	if input.Completed != nil {
+		model.Completed = *input.Completed
+		if model.Completed {
+			if model.CompletedAt == nil {
+				now := time.Now().UTC()
+				model.CompletedAt = &now
+			}
+			model.Status = "completed"
+		} else {
+			model.CompletedAt = nil
+			if model.Status == "completed" {
+				model.Status = "pending"
+			}
 		}
 	}
 	if err := r.db.WithContext(ctx).Save(&model).Error; err != nil {

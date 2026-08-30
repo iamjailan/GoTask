@@ -695,12 +695,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Task details",
+                        "description": "Task fields to update",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/task.Request"
+                            "$ref": "#/definitions/task.UpdateRequest"
                         }
                     }
                 ],
@@ -988,6 +988,45 @@ const docTemplate = `{
                 },
                 "due_date": {
                     "type": "string"
+                },
+                "priority": {
+                    "type": "string",
+                    "enum": [
+                        "low",
+                        "medium",
+                        "high",
+                        "urgent"
+                    ]
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "in_progress",
+                        "completed",
+                        "archived"
+                    ]
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                }
+            }
+        },
+        "task.UpdateRequest": {
+            "type": "object",
+            "properties": {
+                "completed": {
+                    "type": "boolean"
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 5000
+                },
+                "due_date": {
+                    "type": "string",
+                    "format": "date-time"
                 },
                 "priority": {
                     "type": "string",

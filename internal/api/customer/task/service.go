@@ -26,12 +26,13 @@ type CreateInput struct {
 }
 
 type UpdateInput struct {
-	Title       string
-	Description string
-	Status      string
-	Priority    string
+	Title       *string
+	Description *string
+	Status      *string
+	Priority    *string
 	DueDate     *time.Time
-	Completed   bool
+	DueDateSet  bool
+	Completed   *bool
 }
 
 func NewService(repo Repository) Service { return &service{repo: repo} }
@@ -82,10 +83,7 @@ func (s *service) Get(ctx context.Context, customerID, id string) (Model, error)
 func (s *service) Update(ctx context.Context, customerID, id string, input UpdateInput) (Model, error) {
 	var updated Model
 	err := s.repo.Transaction(ctx, func(taskRepo Repository, statisticsRepo StatisticsRepository) error {
-		result, err := taskRepo.Update(ctx, customerID, id, &Model{
-			Title: input.Title, Description: input.Description, Status: input.Status,
-			Priority: input.Priority, DueDate: input.DueDate, Completed: input.Completed,
-		})
+		result, err := taskRepo.Update(ctx, customerID, id, input)
 		if err != nil {
 			return err
 		}

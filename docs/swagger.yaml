@@ -128,6 +128,35 @@ definitions:
     required:
     - title
     type: object
+  task.UpdateRequest:
+    properties:
+      completed:
+        type: boolean
+      description:
+        maxLength: 5000
+        type: string
+      due_date:
+        format: date-time
+        type: string
+      priority:
+        enum:
+        - low
+        - medium
+        - high
+        - urgent
+        type: string
+      status:
+        enum:
+        - pending
+        - in_progress
+        - completed
+        - archived
+        type: string
+      title:
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
 info:
   contact: {}
   description: REST API for GoTask customer accounts and tasks.
@@ -575,12 +604,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Task details
+      - description: Task fields to update
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/task.Request'
+          $ref: '#/definitions/task.UpdateRequest'
       produces:
       - application/json
       responses:

@@ -19,11 +19,11 @@ func TestServiceRecordsTaskLifecycleEvents(t *testing.T) {
 		t.Errorf("create events = %v, want %v", got, want)
 	}
 
-	_, err = service.Update(ctx, "cus_123", created.ID, UpdateInput{Title: "Write tests", Completed: false})
+	_, err = service.Update(ctx, "cus_123", created.ID, UpdateInput{Title: stringPointer("Write tests"), Completed: boolPointer(false)})
 	if err != nil {
 		t.Fatalf("reopen task: %v", err)
 	}
-	_, err = service.Update(ctx, "cus_123", created.ID, UpdateInput{Title: "Write tests", Completed: true})
+	_, err = service.Update(ctx, "cus_123", created.ID, UpdateInput{Title: stringPointer("Write tests"), Completed: boolPointer(true)})
 	if err != nil {
 		t.Fatalf("complete task again: %v", err)
 	}
@@ -54,11 +54,31 @@ func TestServiceDoesNotRecordCompletionWhenTaskStaysCompleted(t *testing.T) {
 	}}
 	service := NewService(repo)
 
-	if _, err := service.Update(ctx, "cus_123", "tsk_123", UpdateInput{Title: "Still done", Completed: true}); err != nil {
+	if _, err := service.Update(ctx, "cus_123", "tsk_123", UpdateInput{Title: stringPointer("Still done"), Completed: boolPointer(true)}); err != nil {
 		t.Fatalf("update task: %v", err)
 	}
 	if got, want := eventTypes(repo.events), []string{StatisticEventUpdated}; !sameStrings(got, want) {
 		t.Errorf("events = %v, want %v", got, want)
+	}
+}
+
+func TestServicePartialUpdatePreservesUnspecifiedFields(t *testing.T) {
+	repo := &fakeTaskRepository{models: map[string]Model{
+		"tsk_123": {
+			ID: "tsk_123", CustomerID: "cus_123", Title: "Keep title", Description: "Keep description",
+			Status: "in_progress", Priority: "high", Completed: false,
+		},
+	}}
+
+	updated, err := NewService(repo).Update(context.Background(), "cus_123", "tsk_123", UpdateInput{Completed: boolPointer(true)})
+	if err != nil {
+		t.Fatalf("update task: %v", err)
+	}
+	if updated.Title != "Keep title" || updated.Description != "Keep description" || updated.Priority != "high" {
+		t.Errorf("unspecified fields changed: %#v", updated)
+	}
+	if !updated.Completed || updated.Status != "completed" {
+		t.Errorf("completion update was not applied: %#v", updated)
 	}
 }
 
@@ -114,22 +134,34 @@ func (r *fakeTaskRepository) Get(_ context.Context, customerID, id string) (Mode
 	return model, nil
 }
 
-func (r *fakeTaskRepository) Update(ctx context.Context, customerID, id string, input *Model) (UpdateResult, error) {
+func (r *fakeTaskRepository) Update(ctx context.Context, customerID, id string, input UpdateInput) (UpdateResult, error) {
 	model, err := r.Get(ctx, customerID, id)
 	if err != nil {
 		return UpdateResult{}, err
 	}
 	previous := model
-	model.Title = input.Title
-	model.Description = input.Description
-	model.Status = input.Status
-	model.Priority = input.Priority
-	model.DueDate = input.DueDate
-	model.Completed = input.Completed
-	if model.Completed {
-		model.Status = "completed"
-	} else if model.Status == "completed" {
-		model.Status = "pending"
+	if input.Title != nil {
+		model.Title = *input.Title
+	}
+	if input.Description != nil {
+		model.Description = *input.Description
+	}
+	if input.Status != nil {
+		model.Status = *input.Status
+	}
+	if input.Priority != nil {
+		model.Priority = *input.Priority
+	}
+	if input.DueDateSet {
+		model.DueDate = input.DueDate
+	}
+	if input.Completed != nil {
+		model.Completed = *input.Completed
+		if model.Completed {
+			model.Status = "completed"
+		} else if model.Status == "completed" {
+			model.Status = "pending"
+		}
 	}
 	r.models[id] = model
 	return UpdateResult{Previous: previous, Current: model}, nil
@@ -182,6 +214,10 @@ func cloneModels(models map[string]Model) map[string]Model {
 	}
 	return clone
 }
+
+func stringPointer(value string) *string { return &value }
+
+func boolPointer(value bool) *bool { return &value }
 
 var _ Repository = (*fakeTaskRepository)(nil)
 var _ StatisticsRepository = (*fakeTaskRepository)(nil)

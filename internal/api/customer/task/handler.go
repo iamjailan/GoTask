@@ -122,7 +122,7 @@ func (h *Handler) get(c *gin.Context) {
 // @Produce json
 // @Security BearerAuth
 // @Param id path string true "Task ID" example(tsk_123)
-// @Param request body task.Request true "Task details"
+// @Param request body task.UpdateRequest true "Task fields to update"
 // @Success 200 {object} response.SuccessEnvelope
 // @Failure 400 {object} response.ErrorEnvelope
 // @Failure 401 {object} response.ErrorEnvelope
@@ -139,14 +139,18 @@ func (h *Handler) update(c *gin.Context) {
 	if !ok {
 		return
 	}
-	var req task.Request
+	var req task.UpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, http.StatusBadRequest, "title is required and must be 1-255 characters")
+		response.Error(c, http.StatusBadRequest, "invalid task update")
+		return
+	}
+	if !req.HasUpdates() {
+		response.Error(c, http.StatusBadRequest, "at least one task field is required")
 		return
 	}
 	model, err := h.service.Update(c.Request.Context(), customerID, id, UpdateInput{
-		Title: req.Title, Description: req.Description, Status: req.Status,
-		Priority: req.Priority, DueDate: req.DueDate, Completed: req.Completed,
+		Title: req.Title, Description: req.Description, Status: req.Status, Priority: req.Priority,
+		DueDate: req.DueDate.Value, DueDateSet: req.DueDate.Set, Completed: req.Completed,
 	})
 	if err != nil {
 		h.writeServiceError(c, err)

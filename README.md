@@ -58,7 +58,7 @@ The container applies pending SQL migrations before starting the API. If migrati
 - `GET /customer/tasks` (requires `Authorization: Bearer <token>`)
 - `GET /customer/tasks/statistics` — historical task-event counts and the 20 most recent events (requires `Authorization: Bearer <token>`)
 - `GET /customer/tasks/:id` — IDs use the `tsk_<UUID>` format
-- `PUT /customer/tasks/:id` — `{ "title": "Learn Gin", "completed": true }`
+- `PUT /customer/tasks/:id` — update only supplied fields, for example `{ "completed": true }`
 - `DELETE /customer/tasks/:id`
 - `POST /customer/auth/register` — create a customer and return a 24-hour JWT
 - `POST /customer/auth/register` — create a pending registration and send a 6-digit email verification code (`202 Accepted`; no customer account exists yet)
