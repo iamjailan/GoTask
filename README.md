@@ -2,6 +2,10 @@
 
 Simple CRUD API for tasks using Go, Gin, GORM, and PostgreSQL.
 
+## Project status
+
+GoTask is a side project for experimenting with Go and API development; it is not intended to be a production-ready service. A deployed demo is currently available at [gotask.sleepany.com](https://gotask.sleepany.com/).
+
 ## Run locally
 
 Make sure PostgreSQL is running locally and that the `gotask` database exists.
@@ -25,6 +29,10 @@ To run the API once without a file watcher, use `make start`.
 The API listens on `http://localhost:8080`.
 
 Run `make help` to see all available commands.
+
+## Environment file protections
+
+Cursor suggestions are disabled for dotenv files in `.vscode/settings.json`. Real `.env` files are also excluded from Cursor indexing and AI context through `.cursorignore`; `.env.example` remains available as a safe configuration template.
 
 ## Run with Docker and local PostgreSQL (Linux)
 
