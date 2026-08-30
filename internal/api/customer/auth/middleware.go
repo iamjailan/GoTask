@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"net/http"
 	"strings"
 
 	apiresponse "gotask/internal/utils/response"
@@ -78,6 +77,6 @@ func jwtMiddleware(secret string, users UserLookup) gin.HandlerFunc {
 }
 
 func unauthorized(c *gin.Context) {
-	apiresponse.Error(c, http.StatusUnauthorized, "unauthorized")
+	apiresponse.Unauthorized(c)
 	c.Abort()
 }

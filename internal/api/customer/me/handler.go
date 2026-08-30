@@ -28,7 +28,7 @@ func (h *Handler) RegisterRoutes(router *gin.Engine, middleware, emailRateLimit 
 func currentUserID(c *gin.Context) (string, bool) {
 	id := strings.TrimSpace(c.GetHeader(auth.CustomerIDHeader))
 	if id == "" {
-		response.Error(c, http.StatusUnauthorized, "unauthorized")
+		response.Unauthorized(c)
 		c.Abort()
 		return "", false
 	}
@@ -188,7 +188,7 @@ func (h *Handler) delete(c *gin.Context) {
 func (h *Handler) writeError(c *gin.Context, err error) {
 	switch {
 	case errors.Is(err, ErrNotFound):
-		response.Error(c, http.StatusUnauthorized, "unauthorized")
+		response.Unauthorized(c)
 	case errors.Is(err, ErrEmailExist):
 		response.Error(c, http.StatusConflict, "email already exists")
 	case errors.Is(err, ErrEmailUnchanged):

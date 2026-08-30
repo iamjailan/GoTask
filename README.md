@@ -56,6 +56,7 @@ The container applies pending SQL migrations before starting the API. If migrati
 - `GET /swagger/index.html` — Swagger UI (requires HTTP Basic Auth)
 - `POST /customer/tasks` — `{ "title": "Learn Go", "description": "...", "status": "pending", "priority": "medium", "due_date": "2026-09-01T12:00:00Z" }` (requires `Authorization: Bearer <token>`)
 - `GET /customer/tasks` (requires `Authorization: Bearer <token>`)
+- `GET /customer/tasks/statistics` — historical task-event counts and the 20 most recent events (requires `Authorization: Bearer <token>`)
 - `GET /customer/tasks/:id` — IDs use the `tsk_<UUID>` format
 - `PUT /customer/tasks/:id` — `{ "title": "Learn Gin", "completed": true }`
 - `DELETE /customer/tasks/:id`

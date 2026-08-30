@@ -1,6 +1,10 @@
 package response
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 type envelope struct {
 	Success bool `json:"success"`
@@ -19,6 +23,12 @@ type ErrorEnvelope struct {
 	Data    ErrorData `json:"data"`
 }
 
+type UnauthorizedEnvelope struct {
+	Success    bool   `json:"success" example:"false"`
+	StatusCode int    `json:"statusCode" example:"401"`
+	Error      string `json:"error" example:"unauthorized"`
+}
+
 // ErrorData contains a human-readable error message.
 type ErrorData struct {
 	Error string `json:"error" example:"unauthorized"`
@@ -30,4 +40,12 @@ func JSON(c *gin.Context, status int, data any) {
 
 func Error(c *gin.Context, status int, message string) {
 	c.JSON(status, envelope{Success: false, Data: gin.H{"error": message}})
+}
+
+func Unauthorized(c *gin.Context) {
+	c.JSON(http.StatusUnauthorized, UnauthorizedEnvelope{
+		Success:    false,
+		StatusCode: http.StatusUnauthorized,
+		Error:      "unauthorized",
+	})
 }

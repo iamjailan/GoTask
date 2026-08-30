@@ -14,8 +14,9 @@ type Repository interface {
 	Create(context.Context, *Model) error
 	List(context.Context, string) ([]Model, error)
 	Get(context.Context, string, string) (Model, error)
-	Update(context.Context, string, string, *Model) (Model, error)
+	Update(context.Context, string, string, *Model) (UpdateResult, error)
 	Delete(context.Context, string, string) error
+	Transaction(context.Context, func(Repository, StatisticsRepository) error) error
 }
 
 type repository struct{ db *gorm.DB }
@@ -24,6 +25,12 @@ func NewRepository(db *gorm.DB) Repository { return &repository{db: db} }
 
 func (r *repository) Create(ctx context.Context, model *Model) error {
 	return r.db.WithContext(ctx).Create(model).Error
+}
+
+func (r *repository) Transaction(ctx context.Context, fn func(Repository, StatisticsRepository) error) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		return fn(&repository{db: tx}, &statisticsRepository{db: tx})
+	})
 }
 
 func (r *repository) List(ctx context.Context, customerID string) ([]Model, error) {
@@ -43,11 +50,12 @@ func (r *repository) Get(ctx context.Context, customerID, id string) (Model, err
 	return model, nil
 }
 
-func (r *repository) Update(ctx context.Context, customerID, id string, input *Model) (Model, error) {
+func (r *repository) Update(ctx context.Context, customerID, id string, input *Model) (UpdateResult, error) {
 	model, err := r.Get(ctx, customerID, id)
 	if err != nil {
-		return Model{}, err
+		return UpdateResult{}, err
 	}
+	previous := model
 	model.Title = input.Title
 	model.Description = input.Description
 	if input.Status != "" {
@@ -71,9 +79,9 @@ func (r *repository) Update(ctx context.Context, customerID, id string, input *M
 		}
 	}
 	if err := r.db.WithContext(ctx).Save(&model).Error; err != nil {
-		return Model{}, err
+		return UpdateResult{}, err
 	}
-	return model, nil
+	return UpdateResult{Previous: previous, Current: model}, nil
 }
 
 func (r *repository) Delete(ctx context.Context, customerID, id string) error {

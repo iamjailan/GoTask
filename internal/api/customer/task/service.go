@@ -54,7 +54,21 @@ func (s *service) Create(ctx context.Context, input CreateInput) (Model, error) 
 		model.Status = "completed"
 		model.CompletedAt = &now
 	}
-	return model, s.repo.Create(ctx, &model)
+	if err := s.repo.Transaction(ctx, func(taskRepo Repository, statisticsRepo StatisticsRepository) error {
+		if err := taskRepo.Create(ctx, &model); err != nil {
+			return err
+		}
+		if err := statisticsRepo.Record(ctx, Statistic{CustomerID: input.CustomerID, TaskID: model.ID, EventType: StatisticEventCreated}); err != nil {
+			return err
+		}
+		if model.Completed {
+			return statisticsRepo.Record(ctx, Statistic{CustomerID: input.CustomerID, TaskID: model.ID, EventType: StatisticEventCompleted})
+		}
+		return nil
+	}); err != nil {
+		return Model{}, err
+	}
+	return model, nil
 }
 
 func (s *service) List(ctx context.Context, customerID string) ([]Model, error) {
@@ -66,12 +80,38 @@ func (s *service) Get(ctx context.Context, customerID, id string) (Model, error)
 }
 
 func (s *service) Update(ctx context.Context, customerID, id string, input UpdateInput) (Model, error) {
-	return s.repo.Update(ctx, customerID, id, &Model{
-		Title: input.Title, Description: input.Description, Status: input.Status,
-		Priority: input.Priority, DueDate: input.DueDate, Completed: input.Completed,
+	var updated Model
+	err := s.repo.Transaction(ctx, func(taskRepo Repository, statisticsRepo StatisticsRepository) error {
+		result, err := taskRepo.Update(ctx, customerID, id, &Model{
+			Title: input.Title, Description: input.Description, Status: input.Status,
+			Priority: input.Priority, DueDate: input.DueDate, Completed: input.Completed,
+		})
+		if err != nil {
+			return err
+		}
+		updated = result.Current
+		if err := statisticsRepo.Record(ctx, Statistic{CustomerID: customerID, TaskID: id, EventType: StatisticEventUpdated}); err != nil {
+			return err
+		}
+		if !result.Previous.Completed && result.Current.Completed {
+			return statisticsRepo.Record(ctx, Statistic{CustomerID: customerID, TaskID: id, EventType: StatisticEventCompleted})
+		}
+		return nil
 	})
+	if err != nil {
+		return Model{}, err
+	}
+	return updated, nil
 }
 
 func (s *service) Delete(ctx context.Context, customerID, id string) error {
-	return s.repo.Delete(ctx, customerID, id)
+	return s.repo.Transaction(ctx, func(taskRepo Repository, statisticsRepo StatisticsRepository) error {
+		if _, err := taskRepo.Get(ctx, customerID, id); err != nil {
+			return err
+		}
+		if err := statisticsRepo.Record(ctx, Statistic{CustomerID: customerID, TaskID: id, EventType: StatisticEventDeleted}); err != nil {
+			return err
+		}
+		return taskRepo.Delete(ctx, customerID, id)
+	})
 }

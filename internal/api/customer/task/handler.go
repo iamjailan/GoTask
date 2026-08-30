@@ -188,7 +188,7 @@ func currentCustomerID(c *gin.Context) (string, bool) {
 	value, exists := c.Get(auth.CustomerIDKey)
 	customerID, isString := value.(string)
 	if !exists || !isString || customerID == "" {
-		response.Error(c, http.StatusUnauthorized, "unauthorized")
+		response.Unauthorized(c)
 		c.Abort()
 		return "", false
 	}

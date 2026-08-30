@@ -38,6 +38,7 @@ func main() {
 	}
 
 	taskHandler := task.NewHandler(task.NewService(task.NewRepository(db)))
+	statisticsHandler := task.NewStatisticsHandler(task.NewStatisticsService(task.NewStatisticsRepository(db)))
 	emailService := gotaskemail.NewResendService(cfg.ResendAPIKey, cfg.ResendFromEmail)
 	authRepository := auth.NewRepository(db)
 	authHandler := auth.NewHandler(auth.NewService(authRepository, cfg.JWTSecret, emailService))
@@ -65,6 +66,7 @@ func main() {
 	registerSwaggerRoutes(router, cfg.SwaggerUsername, cfg.SwaggerPassword)
 	router.Use(apiRateLimit)
 	router.GET("/health", health)
+	statisticsHandler.RegisterRoutes(router, protectedMiddleware)
 	taskHandler.RegisterRoutes(router, protectedMiddleware)
 	authHandler.RegisterRoutes(router, emailRateLimit)
 	meHandler.RegisterRoutes(router, protectedMiddleware, emailRateLimit)

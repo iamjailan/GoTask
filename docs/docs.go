@@ -563,6 +563,49 @@ const docTemplate = `{
                 }
             }
         },
+        "/customer/tasks/statistics": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns historical task-event totals and the 20 most recent events for the authenticated customer.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Customer tasks"
+                ],
+                "summary": "Get task statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SuccessEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.UnauthorizedEnvelope"
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorEnvelope"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorEnvelope"
+                        }
+                    }
+                }
+            }
+        },
         "/customer/tasks/{id}": {
             "get": {
                 "security": [
@@ -931,6 +974,23 @@ const docTemplate = `{
                 "success": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "response.UnauthorizedEnvelope": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "unauthorized"
+                },
+                "statusCode": {
+                    "type": "integer",
+                    "example": 401
+                },
+                "success": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
